@@ -1,3 +1,10 @@
+# readthedocs
+
+*.bat
+docs/_build
+.project
+.pydevproject
+
 # Prerequisites
 *.d
 
