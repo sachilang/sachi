@@ -1,0 +1,47 @@
+{
+	"name": "test",
+	"imports": [
+		{"module": "sachi.lang", "name": "lang"},
+		{"module": "sachi.io", "name": "io"}
+	],
+	"define": [
+		{
+			"name": "and",
+			"imports": [
+			],
+			"define": [
+			],
+			"inputs": [
+				{"name": "A", "type": "bool"},
+				{"name": "B", "type": "bool"}
+			],
+			"outputs": [
+				{"name": "Out", "type": "bool"}
+			],
+			"children": [
+			
+			],
+			"links": [
+			
+			]
+		}
+	],
+	"nodes": [
+		{
+			"name": "and"
+		}
+	],
+	"links": [
+	
+	],
+	"inputs": [
+		{"name": "A"},
+		{"name": "B"}
+	],
+	"outputs": [
+		{"name": "Out"}
+	],
+	"links": [
+	
+	]
+}

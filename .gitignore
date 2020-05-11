@@ -5,6 +5,9 @@ docs/_build
 .project
 .pydevproject
 
+# C
+vs2019
+
 # Prerequisites
 *.d
 
