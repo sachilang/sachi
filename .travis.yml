@@ -37,4 +37,3 @@ matrix:
 before-script:
   - ./autogen.sh
   - ./configure
-  - make clean
