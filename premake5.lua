@@ -45,7 +45,9 @@ project "sachiexe"
 	kind "ConsoleApp"
 
 	files {
-		"sachi/*"
+		"sachi/*.h",
+		"sachi/*.c",
+		"sachi/*.cpp",
 	}
 
 	includedirs {
@@ -53,6 +55,39 @@ project "sachiexe"
 		"external"
 	}
 
+	links {
+		"cJSON"
+	}
+	
+	libdirs { "lib" }
+	
+	targetdir "./"
+	
+	debugdir "%{prj.location}/.."
+	
+	defines {
+		"CJSON_HIDE_SYMBOLS",
+		"SACHI_HIDE_SYMBOLS"
+	}
+
+	warnings 'Extra'
+ 
+project "test"
+	kind "ConsoleApp"
+
+	files {
+		"sachi/*.h",
+		"sachi/*.c",
+		"test/*.h",
+		"test/*.c",
+		"test/*.cpp"
+	}
+
+	includedirs {
+		"./",
+		"external"
+	}
+	
 	links {
 		"cJSON"
 	}
