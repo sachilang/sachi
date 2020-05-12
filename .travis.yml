@@ -12,27 +12,30 @@ branches:
   only:
     - master
 
-matrix:
-  fast_finish: true
-  allow_failures:
-    - env: OPTIONAL=true
+jobs:
   include:
     - name: "Sachi tests"
       os: linux
       language: c
       compiler: clang
       env: TESTING=sachi
-      addons:
-        apt:
-          packages:
-            - gdb
-            - xvfb
+      before-install: 
+        - pip install --user cpp-coveralls
+      script:
+        - ./configure --enable-gcov
+        - make
+        - make check
+      after-success: 
+        - coveralls --exclude external --exclude test --gcov-options '\-lp'
+    - name: "Sachi build"
+      os: linux
+      language: c
+      compiler: clang
+      script:
+        - ./configure
+        - make
+        - chmod a+x sachi/sachi
+        - sachi/sachi
 
-script:
+before-script:
   - ./autogen.sh
-  - ./configure
-  - make clean
-  - make
-  - make check
-  - chmod a+x sachi/sachi
-  - ./sachi/sachi
