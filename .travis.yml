@@ -24,7 +24,7 @@ jobs:
       script:
         - ./configure --enable-gcov
         - make
-        - make check
+        - make check-code-coverage
       after-success: 
         - coveralls --exclude external --exclude test --gcov-options '\-lp'
     - name: "Sachi build"
