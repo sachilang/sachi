@@ -22,7 +22,7 @@ jobs:
       before-install: 
         - pip install --user cpp-coveralls
       script:
-        - ./configure --enable-gcov
+        - ./configure --enable-code-coverage
         - make
         - make check-code-coverage
       after-success: 
