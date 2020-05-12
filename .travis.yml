@@ -28,16 +28,6 @@ matrix:
             - gdb
             - xvfb
 
-# Travis provides only 2 cores, so don't overdo the parallelism and waste memory.
-before_script:
-  # -Og is much faster than -O0
-  - CFLAGS="${CFLAGS} -Og" ./configure
-  - make -j4
-  - make sachiexe
-
 script:
-  - |
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      XVFB_RUN=xvfb-run;
-    fi
-    $XVFB_RUN make buildbottest TESTOPTS="-j4 -uall,-cpu"
+  - ./configure
+  - make sachi
