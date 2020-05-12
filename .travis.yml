@@ -12,10 +12,7 @@ branches:
   only:
     - master
 
-matrix:
-  fast_finish: true
-  allow_failures:
-    - env: OPTIONAL=true
+jobs:
   include:
     - name: "Sachi tests"
       os: linux
