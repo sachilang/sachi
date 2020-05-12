@@ -6,7 +6,8 @@ m4_define(SACHI_VERSION, 0.1)
 AC_PREREQ([2.69])
 AC_INIT([sachi], [SACHI_VERSION], [https://github.com/sachilang/sachi/issues])
 AC_CONFIG_SRCDIR([sachi/main.cpp])
-AC_CONFIG_HEADERS([sachi/config.h])
+AC_CONFIG_HEADERS([config.h])
+AM_INIT_AUTOMAKE
 
 # Checks for programs.
 AC_PROG_CXX
@@ -30,5 +31,5 @@ AC_FUNC_STRTOD
 AC_CHECK_FUNCS([localeconv memset strrchr])
 
 AC_CONFIG_FILES([Makefile
-                 external/cJSON/Makefile])
+                 sachi/Makefile])
 AC_OUTPUT
