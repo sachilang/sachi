@@ -19,9 +19,11 @@ jobs:
       language: c
       compiler: clang
       env: TESTING=sachi
+      addons:
+        apt:
+          packages: lcov
       before-install: 
         - pip install --user cpp-coveralls
-        - apt-get install lcov
       script:
         - ./configure --enable-code-coverage
         - make
