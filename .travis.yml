@@ -32,3 +32,5 @@ script:
   - ./autogen.sh
   - ./configure
   - make sachi
+  - chmod a+x sachi/sachi
+  - ./sachi/sachi
