@@ -12,6 +12,7 @@ AM_INIT_AUTOMAKE
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
+AC_PROG_RANLIB
 
 AC_LANG([C])
 
@@ -31,5 +32,6 @@ AC_FUNC_STRTOD
 AC_CHECK_FUNCS([localeconv memset strrchr])
 
 AC_CONFIG_FILES([Makefile
+                 external/cJSON/Makefile
                  sachi/Makefile])
 AC_OUTPUT

@@ -77,7 +77,7 @@ static int SachiParser_PinFromJSON(cJSON* InDict, Sachi_NodePin* OutPin)
 // Copy an array of JSON items.
 // New = a lambda creating a new generic item
 // Copy = a lambda copying a generic item from JSON
-static int SachiParser_ArrayFromJSON(cJSON* InDict, const char* InName, void** OutObjects, sachi_size_t* OutSize, void*(*New)(sachi_size_t), sachi_size_t(*Copy)(cJSON*, void*, sachi_size_t))
+static int SachiParser_ArrayFromJSON(cJSON* InDict, const char* InName, void** OutObjects, sachi_size_t* OutSize, void*(*New)(sachi_size_t), int(*Copy)(cJSON*, void*, sachi_size_t))
 {
 	cJSON* List = cJSON_GetObjectItem(InDict, InName);
 	if (List && !cJSON_IsArray(List))
@@ -127,9 +127,9 @@ static void* SachiParser_NewPins_Delegate(sachi_size_t InLength)
 	return (void*)Sachi_NewNodePinWithLength(InLength);
 }
 
-static void SachiParser_CopyPins_Delegate(cJSON* InDict, void* InPins, sachi_size_t InIndex)
+static int SachiParser_CopyPins_Delegate(cJSON* InDict, void* InPins, sachi_size_t InIndex)
 {
-	SachiParser_PinFromJSON(InDict, &((Sachi_NodePin*)InPins)[InIndex]);
+	return SachiParser_PinFromJSON(InDict, &((Sachi_NodePin*)InPins)[InIndex]);
 }
 
 static int SachiParser_PinsFromJSON(cJSON* InDict, const char* InName, Sachi_NodePin** OutPins, sachi_size_t* OutSize)

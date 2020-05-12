@@ -6,6 +6,11 @@ extern "C"
 {
 #endif
 
+#ifndef WIN32
+#define __cdecl
+#define __stdcall
+#endif
+
 #define SACHI_CDECL __cdecl
 #define SACHI_STDCALL __stdcall
 
