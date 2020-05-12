@@ -6,6 +6,6 @@ WORKDIR /home
 
 RUN apt-get upgrade -y && \
     apt-get update -y && \
-    apt-get install -y build-essential automake autoconf git curl wget
+    apt-get install -y build-essential libtool-bin automake autoconf git curl wget nano
 
 CMD [ "bash" ]
