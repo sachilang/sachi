@@ -21,7 +21,6 @@ jobs:
       env: TESTING=sachi
       script:
         - make check
-  include:
     - name: "Sachi build"
       os: linux
       language: c
