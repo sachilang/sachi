@@ -2,6 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 m4_define(SACHI_VERSION, 0.1)
+m4_include([m4/ax_code_coverage.m4])
 
 AC_PREREQ([2.69])
 AC_INIT([sachi], [SACHI_VERSION], [https://github.com/sachilang/sachi/issues])
@@ -13,6 +14,7 @@ AM_INIT_AUTOMAKE
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_RANLIB
+AX_CODE_COVERAGE
 
 AC_LANG([C])
 
@@ -33,5 +35,6 @@ AC_CHECK_FUNCS([localeconv memset strrchr])
 
 AC_CONFIG_FILES([Makefile
                  external/cJSON/Makefile
-                 sachi/Makefile])
+                 sachi/Makefile
+                 test/Makefile])
 AC_OUTPUT
