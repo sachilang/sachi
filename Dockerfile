@@ -1,4 +1,4 @@
-FROM debian:latest
+FROM ubuntu:bionic
 
 VOLUME [ "/home/sachi" ]
 

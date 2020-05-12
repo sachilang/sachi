@@ -19,7 +19,7 @@ int main()
 {
 	std::cout << "Sachi running" << std::endl;
 
-	Sachi_Node* Node = SachiParser_Load("test/test.json");
+	Sachi_Node* Node = SachiParser_Load("test.json");
 	if (!Node)
 	{
 		std::cout << SachiParser_GetErrorPtr() << std::endl;
