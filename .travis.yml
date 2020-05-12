@@ -29,5 +29,6 @@ matrix:
             - xvfb
 
 script:
+  - ./autogen.sh
   - ./configure
   - make sachi
