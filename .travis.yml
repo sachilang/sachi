@@ -22,16 +22,19 @@ matrix:
       language: c
       compiler: clang
       env: TESTING=sachi
-      addons:
-        apt:
-          packages:
-            - gdb
-            - xvfb
+      script:
+        - make check
+  include:
+    - name: "Sachi build"
+      os: linux
+      language: c
+      compiler: clang
+      script:
+        - make
+        - chmod a+x sachi/sachi
+        - sachi/sachi
 
-script:
+before-script:
   - ./autogen.sh
   - ./configure
   - make clean
-  - make
-  - chmod a+x sachi/sachi
-  - ./sachi/sachi
