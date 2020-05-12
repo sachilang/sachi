@@ -21,6 +21,7 @@ jobs:
       env: TESTING=sachi
       before-install: 
         - pip install --user cpp-coveralls
+        - apt-get install -Y lcov
       script:
         - ./configure --enable-code-coverage
         - make
