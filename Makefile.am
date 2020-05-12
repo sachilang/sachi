@@ -1,0 +1,3 @@
+SUBDIRS = \
+          external/cJSON \
+          sachi
