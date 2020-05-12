@@ -31,6 +31,6 @@ matrix:
 script:
   - ./autogen.sh
   - ./configure
-  - make sachi
+  - make
   - chmod a+x sachi/sachi
   - ./sachi/sachi
