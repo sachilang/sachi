@@ -19,17 +19,23 @@ jobs:
       language: c
       compiler: clang
       env: TESTING=sachi
+      before-install: 
+        - pip install --user cpp-coveralls
       script:
+        - ./configure --enable-gcov
+        - make
         - make check
+      after-success: 
+        - coveralls --exclude external --exclude test --gcov-options '\-lp'
     - name: "Sachi build"
       os: linux
       language: c
       compiler: clang
       script:
+        - ./configure
         - make
         - chmod a+x sachi/sachi
         - sachi/sachi
 
 before-script:
   - ./autogen.sh
-  - ./configure
