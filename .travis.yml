@@ -33,5 +33,6 @@ script:
   - ./configure
   - make clean
   - make
+  - make check
   - chmod a+x sachi/sachi
   - ./sachi/sachi
