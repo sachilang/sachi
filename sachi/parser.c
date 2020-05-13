@@ -1,75 +1,113 @@
 #include "sachi/parser.h"
+#include "sachi/sachi.h"
 #include "sachi/posix.h"
-#include "sachi/module.h"
+#include "sachi/node.h"
 #include "cJSON/cJSON.h"
-
-typedef struct {
-	const char* message;
-	size_t position;
-} error;
-static error global_error = { NULL, 0 };
-
-SACHI_PUBLIC(const char*) SachiParser_GetErrorPtr(void)
-{
-	return (const char*)(global_error.message + global_error.position);
-}
 
 static void SachiParser_SetErrorNULL()
 {
-	global_error.message = "invalid NULL pointer";
+	Sachi_SetErrorPtr("invalid NULL pointer");
 }
 
 static void SachiParser_SetErrorJSONKeyNotFound()
 {
-	global_error.message = "non existent JSON key";
+	Sachi_SetErrorPtr("non existent JSON key");
 }
 
 static void SachiParser_SetErrorNotJSONArray()
 {
-	global_error.message = "expected a JSON array";
+	Sachi_SetErrorPtr("expected a JSON array");
+}
+
+static void SachiParser_SetErrorNotJSONString()
+{
+	Sachi_SetErrorPtr("expected a JSON string");
 }
 
 static void SachiParser_SetErrorMemoryAllocation()
 {
-	global_error.message = "memory allocation failed";
+	Sachi_SetErrorPtr("memory allocation failed");
 }
 
-static int SachiParser_CopyString(cJSON* InDict, const char* InName, char** OutBuffer)
+static void SachiParser_SetErrorReadFile()
 {
-	cJSON* Item = cJSON_GetObjectItem(InDict, InName);
-	if (!Item || !cJSON_IsString(Item))
+	Sachi_SetErrorPtr("failed to read file");
+}
+
+/**
+ * Get a string value from JSON dict.
+ *
+ * Given a JSON dict and key, validate that the key exists and
+ * return the string value or NULL.
+ *
+ * The string value memory stay owned by the JSON dict.
+ *
+ * :param InDict: JSON dict
+ * :param InKey: key of child
+ * :param OutValue: string value
+ * :param InIsRequired: raise error if key doesn't exist
+ * :return: error code
+ */
+static int SachiParser_GetJSONString(cJSON* InDict, const char* InKey, char** OutValue, BOOL InIsRequired)
+{
+	cJSON* Item = cJSON_GetObjectItem(InDict, InKey);
+	if (!Item)
 	{
-		SachiParser_SetErrorJSONKeyNotFound();
+		if (InIsRequired)
+		{
+			SachiParser_SetErrorJSONKeyNotFound();
+			return SACHI_ERROR;
+		}
+
+		*OutValue = NULL;
+		return SACHI_OK;
+	}
+
+	if (!cJSON_IsString(Item))
+	{
+		SachiParser_SetErrorNotJSONString();
 		return SACHI_ERROR;
 	}
 
-	sachi_size_t Size = sachi_strlen(Item->valuestring);
-	*OutBuffer = (char*)sachi_malloc(sizeof(char) * Size);
-	sachi_memcpy(*OutBuffer, Item->valuestring, Size);
-
+	*OutValue = Item->valuestring;
 	return SACHI_OK;
 }
 
-static int SachiParser_CopyNode(cJSON* InDict, Sachi_Node* OutNode);
-static int SachiParser_PinsFromJSON(cJSON* InDict, const char* InName, Sachi_NodePin** OutPins, sachi_size_t* OutSize);
-
-// Copy Node informations from JSON dict.
-static int SachiParser_CopyNode(cJSON* InDict, Sachi_Node* OutNode)
+/**
+ * Get a string value from JSON dict.
+ *
+ * The string value is copied to OutValue in an allocated buffer.
+ *
+ * :param InDict: JSON dict
+ * :param InKey: key of child string
+ * :param OutValue: buffer to allocate and fill
+ * :param InIsRequired: raise error if key doesn't exist
+ * :return: string or NULL
+ */
+static int SachiParser_CopyJSONString(cJSON* InDict, const char* InKey, char** OutValue, BOOL InIsRequired)
 {
-	if (SachiParser_CopyString(InDict, "name", &OutNode->Name) != SACHI_OK)
+	char* S = NULL;
+	if (SachiParser_GetJSONString(InDict, InKey, &S, InIsRequired) != SACHI_OK)
+	{
 		return SACHI_ERROR;
-	if (SachiParser_PinsFromJSON(InDict, "inputs", &OutNode->Inputs, &OutNode->NumInputs) != SACHI_OK)
-		return SACHI_ERROR;
-	if (SachiParser_PinsFromJSON(InDict, "outputs", &OutNode->Outputs, &OutNode->NumOutputs) != SACHI_OK)
-		return SACHI_ERROR;
+	}
 
-	return SACHI_OK;
-}
+	if (!S)
+	{
+		*OutValue = NULL;
+		return SACHI_OK;
+	}
 
-static int SachiParser_PinFromJSON(cJSON* InDict, Sachi_NodePin* OutPin)
-{
-	if (SachiParser_CopyString(InDict, "name", &OutPin->Name) != SACHI_OK)
+	sachi_size_t Size = sachi_strlen(S);
+	char* Buffer = (char*)sachi_malloc(sizeof(char) * Size);
+	if (!Buffer)
+	{
+		SachiParser_SetErrorMemoryAllocation();
 		return SACHI_ERROR;
+	}
+
+	sachi_memcpy(Buffer, S, Size);
+	*OutValue = Buffer;
 
 	return SACHI_OK;
 }
@@ -77,10 +115,25 @@ static int SachiParser_PinFromJSON(cJSON* InDict, Sachi_NodePin* OutPin)
 // Copy an array of JSON items.
 // New = a lambda creating a new generic item
 // Copy = a lambda copying a generic item from JSON
-static int SachiParser_ArrayFromJSON(cJSON* InDict, const char* InName, void** OutObjects, sachi_size_t* OutSize, void*(*New)(sachi_size_t), int(*Copy)(cJSON*, void*, sachi_size_t))
+static int SachiParser_ArrayFromJSON(cJSON* InDict, const char* InName, void** OutObjects, sachi_size_t* OutSize, void* (*New)(sachi_size_t), int(*Copy)(cJSON*, void*, sachi_size_t), void (*Delete)(void*, sachi_size_t), BOOL InIsRequired)
 {
 	cJSON* List = cJSON_GetObjectItem(InDict, InName);
-	if (List && !cJSON_IsArray(List))
+	if (!List)
+	{
+		if (InIsRequired)
+		{
+			SachiParser_SetErrorJSONKeyNotFound();
+			return SACHI_ERROR;
+		}
+		else
+		{
+			*OutObjects = NULL;
+			*OutSize = 0;
+			return SACHI_OK;
+		}
+	}
+
+	if (!cJSON_IsArray(List))
 	{
 		SachiParser_SetErrorNotJSONArray();
 		return SACHI_ERROR;
@@ -116,41 +169,98 @@ static int SachiParser_ArrayFromJSON(cJSON* InDict, const char* InName, void** O
 fail:
 	if (Objects)
 	{
-		Sachi_DeleteNodePinWithLength(Objects, Size);
+		Delete(Objects, Size);
 	}
 	return SACHI_ERROR;
+}
+
+/**
+ * Copy pin data from JSON dict.
+ *
+ * :param InDict: JSON dict
+ * :param OutPin: pin
+ * :return: error code
+ */
+static int SachiParser_PinFromJSON(cJSON* InDict, Sachi_Pin* OutPin)
+{
+	if (SachiParser_CopyJSONString(InDict, "label", &OutPin->Label, FALSE) != SACHI_OK)
+	{
+		return SACHI_ERROR;
+	}
+
+	if (SachiParser_CopyJSONString(InDict, "name", &OutPin->Name, TRUE) != SACHI_OK)
+	{
+		return SACHI_ERROR;
+	}
+
+	char* S = NULL;
+	if (SachiParser_GetJSONString(InDict, "mode", &S, TRUE) != SACHI_OK)
+	{
+		return SACHI_ERROR;
+	}
+	
+	if (Sachi_PinModeFromString(S, &OutPin->Mode) != SACHI_OK)
+	{
+		return SACHI_ERROR;
+	}
+
+	if (SachiParser_GetJSONString(InDict, "side", &S, TRUE) != SACHI_OK)
+	{
+		return SACHI_ERROR;
+	}
+
+	if (Sachi_PinSideFromString(S, &OutPin->Side) != SACHI_OK)
+	{
+		return SACHI_ERROR;
+	}
+
+	return SACHI_OK;
 }
 
 // Copy an array of pins from JSON
 static void* SachiParser_NewPins_Delegate(sachi_size_t InLength)
 {
-	return (void*)Sachi_NewNodePinWithLength(InLength);
+	return (void*)Sachi_NewPinWithLength(InLength);
 }
 
 static int SachiParser_CopyPins_Delegate(cJSON* InDict, void* InPins, sachi_size_t InIndex)
 {
-	return SachiParser_PinFromJSON(InDict, &((Sachi_NodePin*)InPins)[InIndex]);
+	return SachiParser_PinFromJSON(InDict, &((Sachi_Pin*)InPins)[InIndex]);
 }
 
-static int SachiParser_PinsFromJSON(cJSON* InDict, const char* InName, Sachi_NodePin** OutPins, sachi_size_t* OutSize)
+static void SachiParser_DeletePins_Delegate(void* InPins, sachi_size_t InSize)
 {
-	return SachiParser_ArrayFromJSON(InDict, InName, (void**)OutPins, OutSize, &SachiParser_NewPins_Delegate, &SachiParser_CopyPins_Delegate);
+	Sachi_DeletePinWithLength(&((Sachi_Pin*)InPins), InSize);
 }
 
-// Convert the JSON dict to Node.
-static Sachi_Node* SachiParser_NodeFromJSON(cJSON* InDict)
+static int SachiParser_NodeFromJSON(cJSON* InDict, Sachi_Node** OutNode)
 {
 	Sachi_Node* Node = Sachi_NewNode();
-	if (SachiParser_CopyNode(InDict, Node) != SACHI_OK)
+	if (!Node)
 	{
-		Sachi_DeleteNode(Node);
-		return NULL;
+		SachiParser_SetErrorMemoryAllocation();
+		return SACHI_ERROR;
 	}
 
-	return Node;
+	if (SachiParser_CopyJSONString(InDict, "name", &Node->Name, TRUE) != SACHI_OK)
+	{
+		goto fail;
+	}
+
+	if (SachiParser_ArrayFromJSON(InDict, "pins", &Node->Pins, &Node->NumPins, &SachiParser_NewPins_Delegate, &SachiParser_CopyPins_Delegate, &SachiParser_DeletePins_Delegate, FALSE) != SACHI_OK)
+	{
+		goto fail;
+	}
+
+	*OutNode = Node;
+	return SACHI_OK;
+
+fail:
+	Sachi_DeleteNode(Node);
+	return SACHI_ERROR;
 }
 
-SACHI_PUBLIC(int) SachiParser_ReadFile(const char* InFilename, char** OutBuffer, sachi_size_t* OutSize)
+SACHI_PUBLIC(int) Sachi_ReadFile(const char* InFilename, char** OutBuffer, sachi_size_t* OutSize)
 {
 	if (!InFilename)
 	{
@@ -161,7 +271,7 @@ SACHI_PUBLIC(int) SachiParser_ReadFile(const char* InFilename, char** OutBuffer,
 	sachi_FILE* F = sachi_fopen(InFilename, "rb");
 	if (!F)
 	{
-		global_error.message = "file not found";
+		Sachi_SetErrorPtr("file not found");
 		return SACHI_ERROR;
 	}
 
@@ -184,19 +294,20 @@ SACHI_PUBLIC(int) SachiParser_ReadFile(const char* InFilename, char** OutBuffer,
 	return SACHI_OK;
 }
 
-SACHI_PUBLIC(Sachi_Node*) SachiParser_Load(const char* InFilename)
+SACHI_PUBLIC(Sachi_Node*) Sachi_Load(const char* InFilename)
 {
 	char* Buffer = NULL;
 	sachi_size_t Size = 0;
-	if (SachiParser_ReadFile(InFilename, &Buffer, &Size) != SACHI_OK)
+	if (Sachi_ReadFile(InFilename, &Buffer, &Size) != SACHI_OK)
 	{
+		SachiParser_SetErrorReadFile();
 		return NULL;
 	}
 
-	return SachiParser_LoadsWithLength(Buffer, Size);
+	return Sachi_LoadsWithLength(Buffer, Size);
 }
 
-SACHI_PUBLIC(Sachi_Node*) SachiParser_Loads(const char* InBuffer)
+SACHI_PUBLIC(Sachi_Node*) Sachi_Loads(const char* InBuffer)
 {
 	if (!InBuffer)
 	{
@@ -204,25 +315,23 @@ SACHI_PUBLIC(Sachi_Node*) SachiParser_Loads(const char* InBuffer)
 		return NULL;
 	}
 
-	return SachiParser_LoadsWithLength(InBuffer, sachi_strlen(InBuffer));
+	return Sachi_LoadsWithLength(InBuffer, sachi_strlen(InBuffer));
 }
 
-SACHI_PUBLIC(Sachi_Node*) SachiParser_LoadsWithLength(const char* InBuffer, sachi_size_t InBufferLength)
+SACHI_PUBLIC(Sachi_Node*) Sachi_LoadsWithLength(const char* InBuffer, sachi_size_t InBufferLength)
 {
-	if (!InBuffer)
-	{
-		SachiParser_SetErrorNULL();
-		return NULL;
-	}
-
+	// First, parse JSON dict
 	cJSON* Dict = cJSON_ParseWithLength(InBuffer, InBufferLength);
 	if (!Dict)
 	{
-		global_error.message = cJSON_GetErrorPtr();
+		// Recuperate cJSON error
+		Sachi_SetErrorPtr(cJSON_GetErrorPtr());
 		return NULL;
 	}
 
-	Sachi_Node* Node = SachiParser_NodeFromJSON(Dict);
+	// Convert from JSON to node.
+	Sachi_Node* Node = NULL;
+	SachiParser_NodeFromJSON(Dict, &Node);
 	cJSON_Delete(Dict);
 
 	return Node;

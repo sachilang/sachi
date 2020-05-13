@@ -13,11 +13,15 @@ extern "C"
 #define sachi_size_t size_t
 
 #define sachi_strlen(s) strlen(s)
+#define sachi_strcmp(s1, s2) strcmp(s1, s2)
 
 #define sachi_malloc(size) malloc(size)
 #define sachi_free(o) free(o)
 #define sachi_memcpy(dest, source, length) memcpy(dest, source, length)
 
+#ifdef SACHI_LOG_ENABLED
+#define sachi_printf(format, ...) printf(format, __VA_ARGS__)
+#endif
 #define sachi_snprintf(buff, count, format, ...) snprintf(buff, count, format, __VA_ARGS__)
 
 #define sachi_fopen(name, mode) fopen(name, mode)
@@ -31,6 +35,18 @@ extern "C"
 
 #ifndef LONG
 #define LONG long
+#endif
+
+#ifndef BOOL
+#define BOOL unsigned char
+#endif
+
+#ifndef TRUE
+#define TRUE 0
+#endif
+
+#ifndef FALSE
+#define FALSE 1
 #endif
 
 #ifdef __cplusplus

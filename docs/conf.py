@@ -14,6 +14,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath(".."))
+cautodoc_root = os.path.abspath("..")
 
 
 # -- Project information -----------------------------------------------------
@@ -38,6 +39,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.autodoc",
     "sphinx_autodoc_typehints",
+	"hawkmoth"
 ]
 
 source_suffix = [".rst", ".md"]

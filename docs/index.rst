@@ -11,6 +11,7 @@ Welcome to Sachi's documentation!
    :caption: Contents:
 
    intro
+   api
    roadmap
 
 

@@ -1,0 +1,44 @@
+{
+	"name": "math",
+	"imports": [
+		{"module": "sachi.lang", "name": "lang"},
+		{"module": "sachi.io", "name": "io"}
+	],
+	"nodes": [
+		{
+			"label": "And",
+			"name": "and",
+			"imports": [
+			],
+			"define": [
+			],
+			"inputs": [
+				{"label": "A", "type": "bool"},
+				{"label": "B", "type": "bool"}
+			],
+			"outputs": [
+				{"label": "Out", "type": "bool"}
+			],
+			"children": [
+			
+			],
+			"links": [
+			
+			]
+		}
+	],
+	"pins": [
+		{"label": "([0-9a-zA-Z][-_0-9a-zA-Z]*)?", "type": "exec|value", side: "in|out", "name": "[-_0-9a-zA-Z]*"},
+		...
+	],
+	"flow": {
+		"instances": [
+			{"path": "(parent_node_name.)*node_name", "name": "[-_0-9a-zA-Z]*"},
+			...
+		],
+		"links": [
+			{"from": "(instance_name.)?pin_name", "to": "(instance_name.)?pin_name"},
+			...
+		]
+	}
+}

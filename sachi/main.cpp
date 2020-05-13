@@ -3,8 +3,10 @@ extern "C"
 {
 #endif
 
+#include "sachi/sachi.h"
 #include "sachi/parser.h"
-#include "sachi/module.h"
+#include "sachi/node.h"
+#include "sachi/interpreter.h"
 
 #ifdef __cplusplus
 }
@@ -19,32 +21,25 @@ int main()
 {
 	std::cout << "Sachi running" << std::endl;
 
-	Sachi_Node* Node = SachiParser_Load("test/test.json");
+	Sachi_Node* Node = Sachi_Load("test/test.json");
 	if (!Node)
 	{
-		std::cout << SachiParser_GetErrorPtr() << std::endl;
+		const char* Msg = Sachi_GetErrorPtr();
+		if (Msg)
+		{
+			std::cout << Msg << std::endl;
+		}
 		return 1;
 	}
 
 	std::cout << "Loaded node:" << std::endl;
-	std::cout << "- name: " << Node->Name << std::endl;
-	std::cout << "- inputs:";
-	if (Node->NumInputs > 0)
+	Sachi_PrintNode(Node);
+
+	Sachi_Interpreter* Interpreter = SachiInterpreter_NewInterpreter();
+	if (SachiInterpreter_RunNode(Interpreter, Node) != SACHI_OK)
 	{
-		std::cout << std::endl;
-		for (sachi_size_t I = 0; I < Node->NumInputs; ++I)
-		{
-			std::cout << "  - name: " << Node->Inputs[I].Name << std::endl;
-		}
-	}
-	std::cout << "- outputs:";
-	if (Node->NumOutputs > 0)
-	{
-		std::cout << std::endl;
-		for (sachi_size_t I = 0; I < Node->NumOutputs; ++I)
-		{
-			std::cout << "  - name: " << Node->Outputs[I].Name << std::endl;
-		}
+		std::cout << SachiInterpreter_GetErrorPtr() << std::endl;
+		return 1;
 	}
 
 	Sachi_DeleteNode(Node);

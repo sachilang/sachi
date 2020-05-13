@@ -1,22 +1,17 @@
 {
-	"name": "test",
+	"name": "math",
 	"imports": [
 		{"module": "sachi.lang", "name": "lang"},
 		{"module": "sachi.io", "name": "io"}
 	],
-	"define": [
+	"nodes": [
 		{
+			"label": "And",
 			"name": "and",
-			"imports": [
-			],
-			"define": [
-			],
-			"inputs": [
-				{"name": "A", "type": "bool"},
-				{"name": "B", "type": "bool"}
-			],
-			"outputs": [
-				{"name": "Out", "type": "bool"}
+			"pins": [
+				{"label": "A", "mode": "value", "side": "in", "type": "bool", "name": "a"},
+				{"label": "B", "mode": "value", "side": "in", "type": "bool", "name": "b"},
+				{"label": "Out", "mode": "value", "side": "out", "type": "bool", "name": "out"}
 			],
 			"children": [
 			
@@ -26,22 +21,23 @@
 			]
 		}
 	],
-	"nodes": [
-		{
-			"name": "and"
-		}
+	"pins": [
+		{"label": "", "mode": "exec", "side": "in", "name": "execin"},
+		{"label": "", "mode": "exec", "side": "out", "name": "execout"}
 	],
-	"links": [
-	
-	],
-	"inputs": [
-		{"name": "A"},
-		{"name": "B"}
-	],
-	"outputs": [
-		{"name": "Out"}
-	],
-	"links": [
-	
-	]
+	"flow": {
+		"instances": [
+			{"path": "true", "name": "true"},
+			{"path": "false", "name": "false"},
+			{"path": "and", "name": "and"},
+			{"path": "print", "name": "print"}
+		],
+		"links": [
+			{"from": "this.execin", "to": "print.execin"},
+			{"from": "print.execout", "to": "this.execout"},
+			{"from": "true.out", "to": "and.a"},
+			{"from": "false.out", "to": "and.b"},
+			{"from": "and.out", "to": "print.in"}
+		]
+	}
 }
