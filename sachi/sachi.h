@@ -10,6 +10,7 @@ extern "C"
 
 SACHI_PUBLIC(const char*) Sachi_GetErrorPtr(void);
 SACHI_PUBLIC(void) Sachi_SetErrorPtr(const char* InBuffer);
+SACHI_PUBLIC(void) SachiError_SetMemoryAllocation();
 
 #ifdef __cplusplus
 }

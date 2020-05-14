@@ -1,0 +1,1 @@
+#include "sachi/object/func.h"

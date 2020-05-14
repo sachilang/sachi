@@ -16,6 +16,7 @@ extern "C"
 #define sachi_strcmp(s1, s2) strcmp(s1, s2)
 
 #define sachi_malloc(size) malloc(size)
+#define sachi_realloc(ptr, size) realloc(ptr, size)
 #define sachi_free(o) free(o)
 #define sachi_memcpy(dest, source, length) memcpy(dest, source, length)
 

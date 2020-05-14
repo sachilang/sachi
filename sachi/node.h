@@ -51,8 +51,14 @@ typedef struct _Sachi_Instance
 
 typedef struct _Sachi_Link
 {
-	char* From;
-	char* To;
+	struct {
+		char* InstanceName;
+		char* PinName;
+	} From;
+	struct {
+		char* InstanceName;
+		char* PinName;
+	} To;
 } Sachi_Link;
 
 typedef struct _Sachi_Flow
@@ -81,6 +87,13 @@ SACHI_PUBLIC(void) SachNodei_DeleteNodeWithLength(Sachi_Node*, sachi_size_t);
 #ifdef SACHI_LOG_ENABLED
 SACHI_PUBLIC(void) Sachi_PrintNode(Sachi_Node* InNode);
 #endif
+
+SACHI_PUBLIC(Sachi_Instance*) Sachi_NewInstance();
+SACHI_PUBLIC(Sachi_Instance*) Sachi_NewInstanceWithLength(sachi_size_t);
+SACHI_PUBLIC(void) Sachi_InitInstance(Sachi_Instance*);
+SACHI_PUBLIC(void) Sachi_ResetInstance(Sachi_Instance*);
+SACHI_PUBLIC(void) Sachi_DeleteInstance(Sachi_Instance*);
+SACHI_PUBLIC(void) Sachi_DeleteInstanceWithLength(Sachi_Instance*, sachi_size_t);
 
 #ifdef __cplusplus
 }

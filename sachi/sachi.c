@@ -17,3 +17,8 @@ SACHI_PUBLIC(void) Sachi_SetErrorPtr(const char* InBuffer)
 	global_error.message = InBuffer;
 	global_error.position = 0;
 }
+
+SACHI_PUBLIC(void) SachiError_SetMemoryAllocation()
+{
+	Sachi_SetErrorPtr("memory allocation failed");
+}

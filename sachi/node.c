@@ -57,6 +57,8 @@ SACHI_GENERATENEW(Pin);
 SACHI_GENERATEDELETE(Pin);
 SACHI_GENERATENEW(Node);
 SACHI_GENERATEDELETE(Node);
+SACHI_GENERATENEW(Instance);
+SACHI_GENERATEDELETE(Instance);
 
 SACHI_PUBLIC(void) Sachi_InitPin(Sachi_Pin* InObject)
 {
@@ -233,3 +235,17 @@ SACHI_PUBLIC(void) Sachi_PrintNode(Sachi_Node* InNode)
 	}
 }
 #endif
+
+SACHI_PUBLIC(void) Sachi_InitInstance(Sachi_Instance* InObject)
+{
+	InObject->Path = NULL;
+	InObject->Name = NULL;
+}
+
+SACHI_PUBLIC(void) Sachi_ResetInstance(Sachi_Instance* InObject)
+{
+	sachi_free(InObject->Name);
+	InObject->Name = NULL;
+	sachi_free(InObject->Path);
+	InObject->Path = NULL;
+}

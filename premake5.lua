@@ -36,10 +36,10 @@ project "cJSON"
 	defines {"CJSON_EXPORT_SYMBOLS"}
 	
 	filter "configurations:Debug"
-		targetname "libcJSON_d"
+		targetname "libcjson_d"
 	
 	filter "configurations:Release"
-		targetname "libcJSON"
+		targetname "libcjson"
  
 project "sachiexe"
 	kind "ConsoleApp"
@@ -48,6 +48,8 @@ project "sachiexe"
 		"sachi/*.h",
 		"sachi/*.c",
 		"sachi/*.cpp",
+		"sachi/object/*.h",
+		"sachi/object/*.c",
 	}
 
 	includedirs {
@@ -78,9 +80,10 @@ project "test"
 	files {
 		"sachi/*.h",
 		"sachi/*.c",
+		"sachi/object/*.h",
+		"sachi/object/*.c",
 		"test/*.h",
-		"test/*.c",
-		"test/*.cpp"
+		"test/*.cpp",
 	}
 
 	includedirs {
@@ -88,6 +91,11 @@ project "test"
 		"external"
 	}
 	
+	excludes {
+		"sachi/node.c",
+		"sachi/parser.c",
+	}
+
 	links {
 		"cJSON"
 	}
