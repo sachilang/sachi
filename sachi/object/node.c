@@ -8,6 +8,7 @@ typedef struct _Sachi_Node
     SACHI_OBJECT_HEADER
     Sachi_NodeDef* Defition;
 	Sachi_Object* Pins;
+	Sachi_Object* Children;
 } Sachi_Node;
 
 static Sachi_Object* _Sachi_NewNode(Sachi_Interpreter* InInterpreter)
@@ -31,9 +32,11 @@ static Sachi_NodeDef _Sachi_NodeNodes[] = {
 
 Sachi_ObjectType Sachi_NodeType = {
 	"node",
+	NULL, // base
 	_Sachi_NewNode,
 	_Sachi_DeleteNode,
-	_Sachi_NodeNodes
+	_Sachi_NodeNodes,
+	NULL, // hash
 };
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewNode(Sachi_Interpreter* InInterpreter)
@@ -48,8 +51,18 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewNode(Sachi_Interpreter* InInterpreter)
 	Value->Type = &Sachi_NodeType;
 	Value->Interpreter = InInterpreter;
 	Value->Defition = NULL;
+	Value->Pins = NULL;
+	Value->Children = NULL;
+
 	Value->Pins = Sachi_NewList(InInterpreter);
 	if (!Value->Pins)
+	{
+		Sachi_DeleteNode(Value);
+		return NULL;
+	}
+
+	Value->Children = Sachi_NewList(InInterpreter);
+	if (!Value->Children)
 	{
 		Sachi_DeleteNode(Value);
 		return NULL;
@@ -71,6 +84,8 @@ SACHI_PUBLIC(void) Sachi_DeleteNode(Sachi_Object* InObject)
 	Node->Defition = NULL;
 	Sachi_DeleteList(Node->Pins);
 	Node->Pins = NULL;
+	Sachi_DeleteList(Node->Children);
+	Node->Children = NULL;
 	sachi_free(InObject);
 }
 
@@ -84,8 +99,9 @@ SACHI_PUBLIC(int) SachiNode_SetDefition(Sachi_Object* InObject, Sachi_NodeDef* I
 	Sachi_Node* Node = (Sachi_Node*)InObject;
 
 	Node->Defition = InDefinition;
-	SachiList_Clear(Node->Pins);
 
+	// Instantiate pins
+	SachiList_Clear(Node->Pins);
 	Sachi_PinDef* PinDef = InDefinition->Pins;
 	while (PinDef && PinDef->Name != NULL)
 	{
@@ -99,10 +115,71 @@ SACHI_PUBLIC(int) SachiNode_SetDefition(Sachi_Object* InObject, Sachi_NodeDef* I
 		PinDef++;
 	}
 
+	// Instantiate children
+	SachiList_Clear(Node->Children);
+	Sachi_NodeDef* ChildDef = InDefinition->Children;
+	while (ChildDef && ChildDef->Name != NULL)
+	{
+		Sachi_Node* Child = Sachi_NewNode(Node->Interpreter);
+		if (!Child)
+		{
+			return SACHI_ERROR;
+		}
+		SachiNode_SetDefition(Child, ChildDef);
+		SachiList_Push(Node->Children, Child);
+		ChildDef++;
+	}
+
 	return SACHI_OK;
+}
+
+SACHI_PUBLIC(const char*) SachiNode_GetName(Sachi_Object* InObject)
+{
+	return ((Sachi_Node*)InObject)->Defition->Name;
 }
 
 SACHI_PUBLIC(Sachi_Object*) SachiNode_GetPins(Sachi_Object* InObject)
 {
 	return ((Sachi_Node*)InObject)->Pins;
+}
+
+SACHI_PUBLIC(Sachi_Object*) SachiNode_GetPin(Sachi_Object* InObject, const char* InName)
+{
+	Sachi_Object* List = ((Sachi_Node*)InObject)->Pins;
+
+	Sachi_Object** Items = SachiList_Data(List);
+	sachi_size_t Size = SachiList_Size(Items);
+	for (sachi_size_t I = 0; I < Size; ++I)
+	{
+		if (sachi_strcmp(SachiPin_GetName(*Items), InName) == 0)
+		{
+			return *Items;
+		}
+		Items++;
+	}
+
+	return NULL;
+}
+
+SACHI_PUBLIC(Sachi_Object*) SachiNode_GetChildren(Sachi_Object* InObject)
+{
+	return ((Sachi_Node*)InObject)->Children;
+}
+
+SACHI_PUBLIC(Sachi_Object*) SachiNode_GetChild(Sachi_Object* InObject, const char* InName)
+{
+	Sachi_Object* List = ((Sachi_Node*)InObject)->Children;
+
+	Sachi_Object** Items = SachiList_Data(List);
+	sachi_size_t Size = SachiList_Size(Items);
+	for (sachi_size_t I = 0; I < Size; ++I)
+	{
+		if (sachi_strcmp(SachiNode_GetName(*Items), InName) == 0)
+		{
+			return *Items;
+		}
+		Items++;
+	}
+
+	return NULL;
 }

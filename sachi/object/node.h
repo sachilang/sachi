@@ -13,6 +13,7 @@ extern "C"
 typedef struct _Sachi_Interpreter Sachi_Interpreter;
 typedef struct _Sachi_Node Sachi_Node;
 typedef struct _Sachi_PinDef Sachi_PinDef;
+typedef struct _Sachi_NodeDef Sachi_NodeDef;
 
 extern Sachi_ObjectType Sachi_NodeType;
 
@@ -61,7 +62,7 @@ extern Sachi_ObjectType Sachi_NodeType;
  * `InKwArgs` would contain both `a=value` and `b=value` arguments.
  *
  * :param InInterpreter: instance of interpreter
- * :param InObject: instance of owner object
+ * :param InObject: instance of the node being called
  * :param InInputExecPin: node's input exec pin
  * :param InKwArgs: keyword based arguments
  * :param OutOutputExecPin: node's output exec pin
@@ -80,6 +81,7 @@ typedef struct _Sachi_NodeDef
 	const char* Name; // Unique name to reference this node
 	Sachi_CFunc Func; // C function implementing this node
     Sachi_PinDef* Pins; // Pins definitions
+    Sachi_NodeDef* Children; // Child nodes definitions
 } Sachi_NodeDef;
 
 /**
@@ -117,12 +119,46 @@ SACHI_PUBLIC(Sachi_NodeDef*) SachiNode_GetDefition(Sachi_Object* InObject);
 SACHI_PUBLIC(int) SachiNode_SetDefition(Sachi_Object* InObject, Sachi_NodeDef* InDefinition);
 
 /**
+ * Get the name of this node.
+ *
+ * :param InObject: instance
+ * :return: name
+ */
+SACHI_PUBLIC(const char*) SachiNode_GetName(Sachi_Object* InObject);
+
+/**
  * Get the pins of this node.
  *
  * :param InObject: instance
  * :return: list of pins
  */
 SACHI_PUBLIC(Sachi_Object*) SachiNode_GetPins(Sachi_Object* InObject);
+
+/**
+ * Get the pins of this node.
+ *
+ * :param InObject: instance
+ * :param InName: name to find
+ * :return: list of pins
+ */
+SACHI_PUBLIC(Sachi_Object*) SachiNode_GetPin(Sachi_Object* InObject, const char* InName);
+
+/**
+ * Get the pins of this node.
+ *
+ * :param InObject: instance
+ * :return: list of pins
+ */
+SACHI_PUBLIC(Sachi_Object*) SachiNode_GetChildren(Sachi_Object* InObject);
+
+/**
+ * Get the pins of this node.
+ *
+ * :param InObject: instance
+ * :param InName: name to find
+ * :return: list of pins
+ */
+SACHI_PUBLIC(Sachi_Object*) SachiNode_GetChild(Sachi_Object* InObject, const char* InName);
 
 #ifdef __cplusplus
 }

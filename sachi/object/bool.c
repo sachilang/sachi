@@ -1,8 +1,24 @@
 #include "sachi/object/bool.h"
 #include "sachi/sachi.h"
+#include "sachi/interpreter.h"
+
+static Sachi_Object* _Sachi_NewBool(Sachi_Interpreter* InInterpreter)
+{
+	return Sachi_NewBool(InInterpreter);
+}
+
+static void _Sachi_DeleteBool(Sachi_Object* InObject)
+{
+	Sachi_DeleteBool(InObject);
+}
 
 Sachi_ObjectType Sachi_BoolType = {
-	0 // I
+	"bool",
+	NULL, // base
+	NULL, // new
+	NULL, // delete
+	NULL, // nodes
+	NULL, // hash
 };
 
 Sachi_Bool _Sachi_False = {

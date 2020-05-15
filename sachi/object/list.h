@@ -32,6 +32,14 @@ SACHI_PUBLIC(Sachi_Object*) SachiList_Front(Sachi_Object* InObject);
 SACHI_PUBLIC(Sachi_Object*) SachiList_Back(Sachi_Object* InObject);
 SACHI_PUBLIC(void) SachiList_Clear(Sachi_Object* InObject);
 
+/**
+ * Get the underlying allocated memory array.
+ *
+ * :param InObject: list
+ * :return: underlying memory array
+ */
+SACHI_PUBLIC(Sachi_Object**) SachiList_Data(Sachi_Object* InObject);
+
 #ifdef __cplusplus
 }
 #endif

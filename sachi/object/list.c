@@ -32,9 +32,11 @@ static Sachi_NodeDef _Sachi_ListNodes[] = {
 
 Sachi_ObjectType Sachi_ListType = {
 	"list",
+	NULL, // base
 	_Sachi_NewList,
 	_Sachi_DeleteList,
-	_Sachi_ListNodes
+	_Sachi_ListNodes,
+	NULL, // hash
 };
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewList(Sachi_Interpreter* InInterpreter)
@@ -219,4 +221,9 @@ SACHI_PUBLIC(void) SachiList_Clear(Sachi_Object* InObject)
 	}
 
 	List->Size = 0;
+}
+
+SACHI_PUBLIC(Sachi_Object**) SachiList_Data(Sachi_Object* InObject)
+{
+	return ((Sachi_List*)InObject)->Items;
 }

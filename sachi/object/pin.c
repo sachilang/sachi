@@ -28,9 +28,11 @@ static Sachi_PinDef _Sachi_PinNodes[] = {
 
 Sachi_ObjectType Sachi_PinType = {
 	"Pin",
+	NULL, // base
 	_Sachi_NewPin,
 	_Sachi_DeletePin,
-	_Sachi_PinNodes
+	_Sachi_PinNodes,
+	NULL, // hash
 };
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewPin(Sachi_Interpreter* InInterpreter)
