@@ -24,14 +24,14 @@ void test_string(Sachi_Interpreter* InInterpreter)
 
 	// Create string
 	Sachi_Object* String = Sachi_NewStringFromBuffer(InInterpreter, _SACHI_TEST_STRING);
+	Sachi_IncRef(String);
 	assert(String != NULL);
 	assert(String->Type != NULL);
 	assert(String->Interpreter != NULL);
 	assert(SachiString_Size(String) == strlen(_SACHI_TEST_STRING));
 	assert(Sachi_IsFalse(SachiString_Empty(String)));
 
-	// Destroy
-	Sachi_StringType.Delete(String);
+	Sachi_DecRef(String);
 }
 
 #endif

@@ -21,15 +21,17 @@ extern "C" {
 void test_int(Sachi_Interpreter* InInterpreter)
 {
 	Sachi_Object* Int = Sachi_NewInt(InInterpreter);
+	Sachi_IncRef(Int);
 	assert(Int != NULL);
 	assert(Int->Type != NULL);
 	assert(Int->Interpreter != NULL);
 	assert(SachiInt_Data(Int) == 0);
-	Sachi_IntType.Delete(Int);
+	Sachi_DecRef(Int);
 
 	Int = Sachi_NewIntFromValue(InInterpreter, 1);
+	Sachi_IncRef(Int);
 	assert(SachiInt_Data(Int) == 1);
-	Sachi_IntType.Delete(Int);
+	Sachi_DecRef(Int);
 }
 
 #endif

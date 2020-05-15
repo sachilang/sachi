@@ -23,8 +23,7 @@ static _Sachi_DictEntry* _Sachi_NewDictEntry(Sachi_Interpreter* InInterpreter)
 		return NULL;
 	}
 
-	Value->Type = &Sachi_DictType;
-	Value->Interpreter = InInterpreter;
+	Sachi_NewObject(InInterpreter, Value, &Sachi_DictType);
 	Value->Next = NULL;
 	Value->Key = NULL;
 	Value->Value = NULL;
@@ -36,7 +35,14 @@ static _Sachi_DictEntry* _Sachi_NewDictEntry(Sachi_Interpreter* InInterpreter)
 static void _Sachi_DeleteDictEntry(Sachi_Object* InObject)
 {
 	_Sachi_DictEntry* Value = (_Sachi_DictEntry*)InObject;
-	sachi_free(Value);
+	Sachi_DecRef(Value->Next);
+	Value->Next = NULL;
+	Value->Hash = 0;
+	Sachi_DecRef(Value->Key);
+	Value->Key = NULL;
+	Sachi_DecRef(Value->Value);
+	Value->Value = NULL;
+	Sachi_DeleteObject(InObject);
 }
 
 typedef struct _Sachi_Dict
@@ -83,8 +89,7 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewDict(Sachi_Interpreter* InInterpreter)
 		return NULL;
 	}
 
-	Value->Type = &Sachi_DictType;
-	Value->Interpreter = InInterpreter;
+	Sachi_NewObject(InInterpreter, Value, &Sachi_DictType);
 	Value->Entry = NULL;
 	Value->Size = 0;
 
@@ -100,8 +105,11 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewDict(Sachi_Interpreter* InInterpreter)
 
 SACHI_PUBLIC(void) Sachi_DeleteDict(Sachi_Object* InObject)
 {
+	Sachi_Dict* Dict = (Sachi_Dict*)InObject;
 	SachiDict_Clear(InObject);
-	sachi_free(InObject);
+	_Sachi_DeleteDictEntry(Dict->Entry);
+	Dict->Entry = NULL;
+	Sachi_DeleteObject(InObject);
 }
 
 SACHI_PUBLIC(Sachi_Object*) SachiDict_Empty(Sachi_Object* InObject)
@@ -166,51 +174,58 @@ SACHI_PUBLIC(int) SachiDict_SetItem(Sachi_Object* InObject, Sachi_Object* InKey,
 		Entry->Key = InKey;
 		Dict->Entry->Next = Entry;
 		Dict->Size++;
+		Sachi_IncRef(InKey);
 	}
 
+	Sachi_Object* OldValue = Entry->Value;
 	Entry->Value = InValue;
+	Sachi_IncRef(InValue);
+	Sachi_DecRef(OldValue);
 
 	return SACHI_OK;
 }
 
-SACHI_PUBLIC(Sachi_Object*) SachiDict_GetItem(Sachi_Object* InObject, Sachi_Object* InKey)
+SACHI_PUBLIC(int) SachiDict_GetItem(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object** OutItem)
 {
 	LONG Hash = InKey->Type->Hash(InKey);
 	if (Hash == -1)
 	{
-		return NULL;
+		return SACHI_ERROR;
 	}
 
 	_Sachi_DictEntry* Entry = (_Sachi_DictEntry*)_SachiDict_FindEntry(InObject, Hash, NULL);
 	if (!Entry)
 	{
-		return NULL;
+		*OutItem = NULL;
+		return SACHI_OK;
 	}
 
-	return Entry->Value;
+	*OutItem = Entry->Value;
+	return SACHI_OK;
 }
 
-SACHI_PUBLIC(Sachi_Object*) SachiDict_RemoveItem(Sachi_Object* InObject, Sachi_Object* InKey)
+SACHI_PUBLIC(int) SachiDict_RemoveItem(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object** OutItem)
 {
 	LONG Hash = InKey->Type->Hash(InKey);
 	if (Hash == -1)
 	{
-		return NULL;
+		return SACHI_ERROR;
 	}
 
 	_Sachi_DictEntry* Previous = NULL;
 	_Sachi_DictEntry* Entry = (_Sachi_DictEntry*)_SachiDict_FindEntry(InObject, Hash, &Previous);
 	if (!Entry)
 	{
-		return NULL;
+		*OutItem = NULL;
+		return SACHI_OK;
 	}
 
 	Previous->Next = Entry->Next;
 	((Sachi_Dict*)InObject)->Size--;
-	Sachi_Object* Value = Entry->Value;
+	*OutItem = Entry->Value;
 	_Sachi_DeleteDictEntry(Entry);
 
-	return Value;
+	return SACHI_OK;
 }
 
 SACHI_PUBLIC(void) SachiDict_Clear(Sachi_Object* InObject)

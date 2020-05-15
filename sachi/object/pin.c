@@ -44,8 +44,7 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewPin(Sachi_Interpreter* InInterpreter)
 		return NULL;
 	}
 
-	Value->Type = &Sachi_PinType;
-	Value->Interpreter = InInterpreter;
+	Sachi_NewObject(InInterpreter, Value, &Sachi_PinType);
 	Value->Defition = NULL;
 
 	return (Sachi_Object*)Value;
@@ -57,7 +56,7 @@ SACHI_PUBLIC(void) Sachi_DeletePin(Sachi_Object* InObject)
 
 	Pin->Type = NULL;
 	Pin->Defition = NULL;
-	sachi_free(InObject);
+	Sachi_DeleteObject(InObject);
 }
 
 SACHI_PUBLIC(Sachi_PinDef*) SachiPin_GetDefition(Sachi_Object* InObject)

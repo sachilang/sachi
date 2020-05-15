@@ -24,12 +24,12 @@ int main()
 {
 	Sachi_Interpreter* Interpreter = Sachi_NewInterpreter();
 	assert(Interpreter != NULL);
-	Sachi_InitializeType(&Sachi_BoolType);
-	Sachi_InitializeType(&Sachi_IntType);
-	Sachi_InitializeType(&Sachi_StringType);
-	Sachi_InitializeType(&Sachi_ListType);
-	Sachi_InitializeType(&Sachi_DictType);
-	Sachi_InitializeType(&Sachi_NodeType);
+	Sachi_InitType(&Sachi_BoolType);
+	Sachi_InitType(&Sachi_IntType);
+	Sachi_InitType(&Sachi_StringType);
+	Sachi_InitType(&Sachi_ListType);
+	Sachi_InitType(&Sachi_DictType);
+	Sachi_InitType(&Sachi_NodeType);
 
 	test_int(Interpreter);
 	test_string(Interpreter);

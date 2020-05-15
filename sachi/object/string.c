@@ -56,8 +56,7 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewString(Sachi_Interpreter* InInterpreter)
 		return NULL;
 	}
 
-	Value->Type = &Sachi_StringType;
-	Value->Interpreter = InInterpreter;
+	Sachi_NewObject(InInterpreter, Value, &Sachi_StringType);
 	Value->Buffer = NULL;
 	Value->Size = 0;
 
@@ -72,12 +71,16 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewStringFromBuffer(Sachi_Interpreter* InInter
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewStringFromBufferAndLength(Sachi_Interpreter* InInterpreter, const char* InBuffer, sachi_size_t InLength)
 {
 	Sachi_String* String = (Sachi_String*)Sachi_NewString(InInterpreter);
+	if (!String)
+	{
+		return NULL;
+	}
 
 	char* Buffer = (char*)sachi_malloc(sizeof(char) * (InLength + 1));
 	if (!Buffer)
 	{
-		Sachi_DeleteString(String);
 		SachiInterpreter_MemoryAllocationError(InInterpreter);
+		Sachi_DeleteString(String);
 		return NULL;
 	}
 
@@ -95,6 +98,7 @@ SACHI_PUBLIC(void) Sachi_DeleteString(Sachi_Object* InObject)
 	sachi_free(String->Buffer);
 	String->Buffer = NULL;
 	String->Size = 0;
+	Sachi_DeleteObject(InObject);
 }
 
 SACHI_PUBLIC(Sachi_Object*) SachiString_Empty(Sachi_Object* InObject)

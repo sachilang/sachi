@@ -38,8 +38,7 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewIntFromValue(Sachi_Interpreter* InInterpret
 		return NULL;
 	}
 
-	Value->Type = &Sachi_IntType;
-	Value->Interpreter = InInterpreter;
+	Sachi_NewObject(InInterpreter, Value, &Sachi_IntType);
 	Value->Value = InValue;
 
 	return (Sachi_Object*)Value;
@@ -49,7 +48,7 @@ SACHI_PUBLIC(void) Sachi_DeleteInt(Sachi_Object* InObject)
 {
 	Sachi_Int* Int = (Sachi_Int*)InObject;
 	Int->Value = 0;
-	sachi_free(Int);
+	Sachi_DeleteObject(InObject);
 }
 
 SACHI_PUBLIC(sachi_ssize_t) SachiInt_Data(Sachi_Object* InObject)

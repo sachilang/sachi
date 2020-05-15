@@ -21,8 +21,8 @@ SACHI_PUBLIC(void) Sachi_DeleteDict(Sachi_Object* InObject);
 SACHI_PUBLIC(Sachi_Object*) SachiDict_Empty(Sachi_Object* InObject);
 SACHI_PUBLIC(sachi_size_t) SachiDict_Size(Sachi_Object* InObject);
 SACHI_PUBLIC(int) SachiDict_SetItem(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object* InValue);
-SACHI_PUBLIC(Sachi_Object*) SachiDict_GetItem(Sachi_Object* InObject, Sachi_Object* InKey);
-SACHI_PUBLIC(Sachi_Object*) SachiDict_RemoveItem(Sachi_Object* InObject, Sachi_Object* InKey);
+SACHI_PUBLIC(int) SachiDict_GetItem(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object** OutItem);
+SACHI_PUBLIC(int) SachiDict_RemoveItem(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object** OutItem);
 SACHI_PUBLIC(void) SachiDict_Clear(Sachi_Object* InObject);
 
 #ifdef __cplusplus

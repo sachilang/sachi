@@ -25,6 +25,7 @@ void test_list(Sachi_Interpreter* InInterpreter)
 
 	// Create list
 	Sachi_Object* List = Sachi_ListType.New(InInterpreter);
+	Sachi_IncRef(List);
 	assert(List != NULL);
 	assert(List->Type != NULL);
 	assert(List->Interpreter != NULL);
@@ -52,8 +53,9 @@ void test_list(Sachi_Interpreter* InInterpreter)
 	assert(SachiList_SetItem(List, Size, (Sachi_Object*)Sachi_False) == SACHI_ERROR);
 
 	// Get by index
-	assert(SachiList_GetItem(List, Size - 1) != NULL);
-	assert(SachiList_GetItem(List, Size) == NULL);
+	Sachi_Object* Item = NULL;
+	assert(SachiList_GetItem(List, Size - 1, &Item) == SACHI_OK);
+	assert(SachiList_GetItem(List, Size, &Item) == SACHI_ERROR);
 
 	// Front and back
 	assert(SachiList_Front(List) != NULL);
@@ -62,7 +64,7 @@ void test_list(Sachi_Interpreter* InInterpreter)
 	// Empty list
 	for (sachi_size_t I = MAX_CAPACITY; I >= 1; --I)
 	{
-		SachiList_Pop(List);
+		SachiList_Pop(List, NULL);
 		Size = SachiList_Size(List);
 		assert(Size == (I - 1));
 		std::cout << "After pop size=" << Size << std::endl;
@@ -72,13 +74,12 @@ void test_list(Sachi_Interpreter* InInterpreter)
 	assert(SachiList_Capacity(List) == MAX_CAPACITY);
 
 	// List already empty
-	SachiList_Pop(List);
+	SachiList_Pop(List, NULL);
 	Size = SachiList_Size(List);
 	assert(Size == 0);
 	std::cout << "After pop size=" << Size << std::endl;
 
-	// Destroy
-	Sachi_ListType.Delete(List);
+	Sachi_DecRef(List);
 }
 
 #endif

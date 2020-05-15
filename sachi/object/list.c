@@ -53,8 +53,7 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewListWithCapacity(Sachi_Interpreter* InInter
 		return NULL;
 	}
 
-	Value->Type = &Sachi_ListType;
-	Value->Interpreter = InInterpreter;
+	Sachi_NewObject(InInterpreter, Value, &Sachi_ListType);
 	Value->Items = NULL;
 	Value->Size = 0;
 	Value->AllocatedSize = 0;
@@ -66,7 +65,8 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewListWithCapacity(Sachi_Interpreter* InInter
 
 SACHI_PUBLIC(void) Sachi_DeleteList(Sachi_Object* InObject)
 {
-
+	SachiList_Clear(InObject);
+	Sachi_DeleteObject(InObject);
 }
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_IsList(Sachi_Object* InObject)
@@ -143,25 +143,40 @@ SACHI_PUBLIC(int) SachiList_Push(Sachi_Object* InObject, Sachi_Object* InItem)
 		}
 	}
 
+	Sachi_IncRef(InItem);
 	List->Items[List->Size] = InItem;
 	List->Size++;
 
 	return SACHI_OK;
 }
 
-SACHI_PUBLIC(Sachi_Object*) SachiList_Pop(Sachi_Object* InObject)
+SACHI_PUBLIC(int) SachiList_Pop(Sachi_Object* InObject, Sachi_Object** OutItem)
 {
 	Sachi_List* List = (Sachi_List*)InObject;
 	if (List->Size == 0)
 	{
-		return NULL;
+		if (OutItem)
+		{
+			*OutItem = NULL;
+		}
+		return SACHI_OK;
 	}
 
 	List->Size--;
 	Sachi_Object* Item = List->Items[List->Size];
 	List->Items[List->Size] = NULL;
 
-	return Item;
+	if (OutItem)
+	{
+		*OutItem = Item;
+	}
+
+	if (Sachi_DecRef(Item) != SACHI_OK)
+	{
+		return SACHI_ERROR;
+	}
+
+	return SACHI_OK;
 }
 
 SACHI_PUBLIC(int) SachiList_SetItem(Sachi_Object* InObject, sachi_size_t InIndex, Sachi_Object* InItem)
@@ -172,20 +187,22 @@ SACHI_PUBLIC(int) SachiList_SetItem(Sachi_Object* InObject, sachi_size_t InIndex
 		return SACHI_ERROR;
 	}
 
+	Sachi_IncRef(InItem);
 	List->Items[InIndex] = InItem;
 
 	return SACHI_OK;
 }
 
-SACHI_PUBLIC(Sachi_Object*) SachiList_GetItem(Sachi_Object* InObject, sachi_size_t InIndex)
+SACHI_PUBLIC(int) SachiList_GetItem(Sachi_Object* InObject, sachi_size_t InIndex, Sachi_Object** OutItem)
 {
 	Sachi_List* List = (Sachi_List*)InObject;
 	if (InIndex >= List->Size)
 	{
-		return NULL;
+		return SACHI_ERROR;
 	}
 
-	return List->Items[InIndex];
+	*OutItem = List->Items[InIndex];
+	return SACHI_OK;
 }
 
 SACHI_PUBLIC(Sachi_Object*) SachiList_Front(Sachi_Object* InObject)

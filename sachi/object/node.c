@@ -48,8 +48,7 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewNode(Sachi_Interpreter* InInterpreter)
 		return NULL;
 	}
 
-	Value->Type = &Sachi_NodeType;
-	Value->Interpreter = InInterpreter;
+	Sachi_NewObject(InInterpreter, Value, &Sachi_NodeType);
 	Value->Defition = NULL;
 	Value->Pins = NULL;
 	Value->Children = NULL;
@@ -86,7 +85,7 @@ SACHI_PUBLIC(void) Sachi_DeleteNode(Sachi_Object* InObject)
 	Node->Pins = NULL;
 	Sachi_DeleteList(Node->Children);
 	Node->Children = NULL;
-	sachi_free(InObject);
+	Sachi_DeleteObject(InObject);
 }
 
 SACHI_PUBLIC(Sachi_NodeDef*) SachiNode_GetDefition(Sachi_Object* InObject)
