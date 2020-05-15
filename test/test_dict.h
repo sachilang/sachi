@@ -18,16 +18,13 @@ extern "C" {
 }
 #endif
 
-void test_dict()
+void test_dict(Sachi_Interpreter* InInterpreter)
 {
-	Sachi_Interpreter* Interpreter = Sachi_NewInterpreter();
-	assert(Interpreter != NULL);
-	Sachi_InitializeType(&Sachi_BoolType);
-	Sachi_InitializeType(&Sachi_DictType);
-
 	// Create dict
-	Sachi_Object* Dict = Sachi_DictType.New(Interpreter);
+	Sachi_Object* Dict = Sachi_DictType.New(InInterpreter);
 	assert(Dict != NULL);
+	assert(Dict->Type != NULL);
+	assert(Dict->Interpreter != NULL);
 	assert(SachiDict_Size(Dict) == 0);
 	assert(Sachi_IsTrue(SachiDict_Empty(Dict)));
 
@@ -46,10 +43,14 @@ void test_dict()
 	assert(SachiDict_Size(Dict) == 0);
 	assert(Sachi_IsTrue(SachiDict_Empty(Dict)));
 
+	SachiDict_SetItem(Dict, Sachi_True, Sachi_True);
+	SachiDict_SetItem(Dict, Sachi_False, Sachi_True);
+	SachiDict_Clear(Dict);
+	assert(SachiDict_Size(Dict) == 0);
+	assert(Sachi_IsTrue(SachiDict_Empty(Dict)));
+
 	// Destroy
 	Sachi_DictType.Delete(Dict);
-
-	Sachi_DeleteInterpreter(Interpreter);
 }
 
 #endif

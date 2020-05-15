@@ -11,6 +11,7 @@ extern "C"
 #include <string.h>
 
 #define sachi_size_t size_t
+#define sachi_ssize_t signed int
 
 #define sachi_strlen(s) strlen(s)
 #define sachi_strcmp(s1, s2) strcmp(s1, s2)

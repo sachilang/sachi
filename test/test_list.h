@@ -18,17 +18,16 @@ extern "C" {
 }
 #endif
 
-void test_list()
+void test_list(Sachi_Interpreter* InInterpreter)
 {
 #define INITIAL_CAPACITY 0
 #define MAX_CAPACITY 5
 
-	Sachi_Interpreter* Interpreter = Sachi_NewInterpreter();
-	assert(Interpreter != NULL);
-
 	// Create list
-	Sachi_Object* List = Sachi_ListType.New(Interpreter);
+	Sachi_Object* List = Sachi_ListType.New(InInterpreter);
 	assert(List != NULL);
+	assert(List->Type != NULL);
+	assert(List->Interpreter != NULL);
 	sachi_size_t Size = SachiList_Size(List);
 	assert(Size == 0);
 	assert(Sachi_IsTrue(SachiList_Empty(List)));
@@ -80,8 +79,6 @@ void test_list()
 
 	// Destroy
 	Sachi_ListType.Delete(List);
-
-	Sachi_DeleteInterpreter(Interpreter);
 }
 
 #endif

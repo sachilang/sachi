@@ -23,6 +23,7 @@ static _Sachi_DictEntry* _Sachi_NewDictEntry(Sachi_Interpreter* InInterpreter)
 		return NULL;
 	}
 
+	Value->Type = &Sachi_DictType;
 	Value->Interpreter = InInterpreter;
 	Value->Next = NULL;
 	Value->Key = NULL;
@@ -99,7 +100,8 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewDict(Sachi_Interpreter* InInterpreter)
 
 SACHI_PUBLIC(void) Sachi_DeleteDict(Sachi_Object* InObject)
 {
-
+	SachiDict_Clear(InObject);
+	sachi_free(InObject);
 }
 
 SACHI_PUBLIC(Sachi_Object*) SachiDict_Empty(Sachi_Object* InObject)
@@ -161,6 +163,7 @@ SACHI_PUBLIC(int) SachiDict_SetItem(Sachi_Object* InObject, Sachi_Object* InKey,
 		Sachi_Dict* Dict = (Sachi_Dict*)InObject;
 		Entry->Next = Dict->Entry->Next;
 		Entry->Hash = Hash;
+		Entry->Key = InKey;
 		Dict->Entry->Next = Entry;
 		Dict->Size++;
 	}
@@ -208,4 +211,20 @@ SACHI_PUBLIC(Sachi_Object*) SachiDict_RemoveItem(Sachi_Object* InObject, Sachi_O
 	_Sachi_DeleteDictEntry(Entry);
 
 	return Value;
+}
+
+SACHI_PUBLIC(void) SachiDict_Clear(Sachi_Object* InObject)
+{
+	Sachi_Dict* Dict = (Sachi_Dict*)InObject;
+
+	_Sachi_DictEntry* Entry = Dict->Entry;
+	_Sachi_DictEntry* Next = NULL;
+	while (Entry->Next)
+	{
+		Next = Entry->Next;
+		Entry->Next = Next->Next;
+		_Sachi_DeleteDictEntry(Next);
+	}
+
+	Dict->Size = 0;
 }

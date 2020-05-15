@@ -13,6 +13,10 @@ extern "C" {
 #include "sachi/interpreter.h"
 #include "sachi/object/node.h"
 #include "sachi/object/pin.h"
+#include "sachi/object/list.h"
+#include "sachi/object/dict.h"
+#include "sachi/object/int.h"
+#include "sachi/object/string.h"
 
 #ifdef __cplusplus
 }
@@ -29,7 +33,7 @@ static Sachi_PinDef HelloWorldPinsDefs[] = {
 	NULL
 };
 
-static int _HelloWorld(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object** OutKwResults)
+static int _HelloWorld(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults)
 {
 	if (sachi_strcmp(SachiPin_GetName(InInputExecPin), HelloWorldPinsDefs[_SACHI_HELLOWORLD_EXECHELLO].Name) == 0)
 	{
@@ -59,9 +63,14 @@ static Sachi_PinDef MinPinsDefs[] = {
 	NULL
 };
 
-static int _Min(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object** OutKwResults)
+static int _Min(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults)
 {
-	std::cout << "Min" << std::endl;
+	Sachi_Object* A = SachiDict_GetItem(InKwArgs, Sachi_NewStringFromBuffer(InInterpreter, "a"));
+	Sachi_Object* B = SachiDict_GetItem(InKwArgs, Sachi_NewStringFromBuffer(InInterpreter, "b"));
+	Sachi_Object* Out = SachiInt_Data(A) <= SachiInt_Data(B) ? A : B;
+	SachiDict_SetItem(OutKwResults, Sachi_NewStringFromBuffer(InInterpreter, "out"), Out);
+
+	std::cout << "Min a=" << SachiInt_Data(A) << ", b=" << SachiInt_Data(B) << ", out=" << SachiInt_Data(Out) << std::endl;
 	return SACHI_OK;
 }
 
@@ -78,15 +87,13 @@ static Sachi_NodeDef PackageDef = {
 	PackageChildrenDefs
 };
 
-void test_node()
+void test_node(Sachi_Interpreter* InInterpreter)
 {
-
-	Sachi_Interpreter* Interpreter = Sachi_NewInterpreter();
-	assert(Interpreter != NULL);
-	
 	// Create the Package node
-	Sachi_Object* Node = Sachi_NodeType.New(Interpreter);
+	Sachi_Object* Node = Sachi_NodeType.New(InInterpreter);
 	assert(Node != NULL);
+	assert(Node->Type != NULL);
+	assert(Node->Interpreter != NULL);
 
 	assert(SachiNode_SetDefition(Node, &PackageDef) == SACHI_OK);
 
@@ -104,7 +111,7 @@ void test_node()
 	assert(Pins != NULL);
 
 	OutDefinition->Func(
-		Interpreter,
+		InInterpreter,
 		HelloWorldNode,
 		SachiList_GetItem(Pins, _SACHI_HELLOWORLD_EXECHELLO),
 		NULL,
@@ -113,7 +120,7 @@ void test_node()
 	);
 
 	OutDefinition->Func(
-		Interpreter,
+		InInterpreter,
 		HelloWorldNode,
 		SachiList_GetItem(Pins, _SACHI_HELLOWORLD_EXECWORLD),
 		NULL,
@@ -128,19 +135,26 @@ void test_node()
 	Pins = SachiNode_GetPins(MinNode);
 	assert(Pins != NULL);
 
+	Sachi_Object* KwArgs = Sachi_NewDict(InInterpreter);
+	assert(KwArgs != NULL);
+
+	SachiDict_SetItem(KwArgs, Sachi_NewStringFromBuffer(InInterpreter, "a"), Sachi_NewIntFromValue(InInterpreter, 1));
+	SachiDict_SetItem(KwArgs, Sachi_NewStringFromBuffer(InInterpreter, "b"), Sachi_NewIntFromValue(InInterpreter, 2));
+
+	Sachi_Object* KwResults = Sachi_NewDict(InInterpreter);
+	assert(KwResults != NULL);
+
 	OutDefinition->Func(
-		Interpreter,
+		InInterpreter,
 		MinNode,
 		NULL,
+		KwArgs,
 		NULL,
-		NULL,
-		NULL
+		KwResults
 	);
 
 	// Destroy
 	Sachi_NodeType.Delete(Node);
-
-	Sachi_DeleteInterpreter(Interpreter);
 }
 
 #endif

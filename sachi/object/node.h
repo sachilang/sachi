@@ -69,7 +69,7 @@ extern Sachi_ObjectType Sachi_NodeType;
  * :param OutKwResults: keyword based results
  * :return: error code
  */
-typedef int (*Sachi_CFunc)(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object** OutKwResults);
+typedef int (*Sachi_CFunc)(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults);
 
 /**
  * Definition of a node.
