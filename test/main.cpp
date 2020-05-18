@@ -4,12 +4,14 @@
 #include "test/test_list.h"
 #include "test/test_dict.h"
 #include "test/test_node.h"
+#include "test/test_json.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+#include "sachi/sachi.h"
 #include "sachi/object/interpreter.h"
 #include "sachi/object/dict.h"
 #include "sachi/object/list.h"
@@ -44,5 +46,6 @@ int main()
 	run(test_list);
 	run(test_dict);
 	run(test_node);
+	run(test_json);
 	return 0;
 }

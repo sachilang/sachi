@@ -179,7 +179,7 @@ SACHI_PUBLIC(Sachi_Object*) SachiNode_GetChild(Sachi_Object* InObject, const cha
 	Sachi_Object* List = ((Sachi_Node*)InObject)->Children;
 
 	Sachi_Object** Items = SachiList_Data(List);
-	sachi_size_t Size = SachiList_Size(Items);
+	sachi_size_t Size = SachiList_Size(List);
 	for (sachi_size_t I = 0; I < Size; ++I)
 	{
 		const char* Name = SachiNode_GetName(*Items);
@@ -191,4 +191,22 @@ SACHI_PUBLIC(Sachi_Object*) SachiNode_GetChild(Sachi_Object* InObject, const cha
 	}
 
 	return NULL;
+}
+
+SACHI_PUBLIC(int) SachiNode_Call(Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults)
+{
+	Sachi_NodeDef* OutDefinition = SachiNode_GetDefition(InObject);
+	if (!OutDefinition)
+	{
+		return SACHI_ERROR;
+	}
+
+	return OutDefinition->Func(
+		InObject->Interpreter,
+		InObject,
+		InInputExecPin,
+		InKwArgs,
+		OutOutputExecPin,
+		OutKwResults
+	);
 }

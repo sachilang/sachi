@@ -112,7 +112,8 @@ project "test"
 	
 	defines {
 		"CJSON_HIDE_SYMBOLS",
-		"SACHI_HIDE_SYMBOLS"
+		"SACHI_HIDE_SYMBOLS",
+		"WITH_MEMORY_TRACKER"
 	}
 
 	warnings 'Extra'

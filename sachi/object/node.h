@@ -160,6 +160,14 @@ SACHI_PUBLIC(Sachi_Object*) SachiNode_GetChildren(Sachi_Object* InObject);
  */
 SACHI_PUBLIC(Sachi_Object*) SachiNode_GetChild(Sachi_Object* InObject, const char* InName);
 
+/**
+ * Call a function of this node.
+ *
+ * :param InObject: instance
+ * :return: error code
+ */
+SACHI_PUBLIC(int) SachiNode_Call(Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults);
+
 #ifdef __cplusplus
 }
 #endif
