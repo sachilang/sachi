@@ -32,6 +32,7 @@ static Sachi_NodeDef _Sachi_ListNodes[] = {
 
 Sachi_ObjectType Sachi_ListType = {
 	"list",
+	sizeof(Sachi_List),
 	NULL, // base
 	_Sachi_NewList,
 	_Sachi_DeleteList,
@@ -46,14 +47,12 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewList(Sachi_Interpreter* InInterpreter)
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewListWithCapacity(Sachi_Interpreter* InInterpreter, sachi_size_t InCapacity)
 {
-	Sachi_List* Value = (Sachi_List*)sachi_malloc(sizeof(Sachi_List));
+	Sachi_List* Value = (Sachi_List*)Sachi_NewObject(InInterpreter, &Sachi_ListType);
 	if (!Value)
 	{
-		SachiError_SetMemoryAllocation();
 		return NULL;
 	}
 
-	Sachi_NewObject(InInterpreter, Value, &Sachi_ListType);
 	Value->Items = NULL;
 	Value->Size = 0;
 	Value->AllocatedSize = 0;
@@ -69,24 +68,9 @@ SACHI_PUBLIC(void) Sachi_DeleteList(Sachi_Object* InObject)
 	Sachi_DeleteObject(InObject);
 }
 
-SACHI_PUBLIC(Sachi_Object*) Sachi_IsList(Sachi_Object* InObject)
+SACHI_PUBLIC(int) SachiList_Empty(Sachi_Object* InObject)
 {
-	if (InObject->Type == &Sachi_ListType)
-	{
-		return Sachi_True;
-	}
-
-	return Sachi_False;
-}
-
-SACHI_PUBLIC(Sachi_Object*) SachiList_Empty(Sachi_Object* InObject)
-{
-	if (((Sachi_List*)InObject)->Size == 0)
-	{
-		return Sachi_True;
-	}
-
-	return Sachi_False;
+	return ((Sachi_List*)InObject)->Size == 0;
 }
 
 SACHI_PUBLIC(sachi_size_t) SachiList_Size(Sachi_Object* InObject)
@@ -127,11 +111,6 @@ SACHI_PUBLIC(sachi_size_t) SachiList_Capacity(Sachi_Object* InObject)
 
 SACHI_PUBLIC(int) SachiList_Push(Sachi_Object* InObject, Sachi_Object* InItem)
 {
-	if (!Sachi_CheckList(InObject))
-	{
-		return SACHI_ERROR;
-	}
-
 	Sachi_List* List = (Sachi_List*)InObject;
 
 	// Must expand allocated memory
@@ -187,8 +166,10 @@ SACHI_PUBLIC(int) SachiList_SetItem(Sachi_Object* InObject, sachi_size_t InIndex
 		return SACHI_ERROR;
 	}
 
-	Sachi_IncRef(InItem);
+	Sachi_Object* OldItem = List->Items[InIndex];
 	List->Items[InIndex] = InItem;
+	Sachi_DecRef(OldItem);
+	Sachi_IncRef(InItem);
 
 	return SACHI_OK;
 }
@@ -233,8 +214,8 @@ SACHI_PUBLIC(void) SachiList_Clear(Sachi_Object* InObject)
 	for (sachi_size_t I = 0; I < List->Size; ++I)
 	{
 		Sachi_Object* Item = List->Items[I];
-		Item->Type->Delete(Item);
 		List->Items[I] = NULL;
+		Sachi_DecRef(Item);
 	}
 
 	List->Size = 0;

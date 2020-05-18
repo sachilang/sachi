@@ -5,12 +5,13 @@
 #include <stdio.h>
 #include <iostream>
 #include <assert.h>
+#include "test/test_case.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "sachi/interpreter.h"
+#include "sachi/object/interpreter.h"
 #include "sachi/object/int.h"
 #include "sachi/object/bool.h"
 
@@ -21,16 +22,14 @@ extern "C" {
 void test_int(Sachi_Interpreter* InInterpreter)
 {
 	Sachi_Object* Int = Sachi_NewInt(InInterpreter);
-	Sachi_IncRef(Int);
-	assert(Int != NULL);
-	assert(Int->Type != NULL);
-	assert(Int->Interpreter != NULL);
-	assert(SachiInt_Data(Int) == 0);
+	Assert(Int != NULL);
+	Assert(Int->Type != NULL);
+	Assert(Int->Interpreter != NULL);
+	Assert(SachiInt_Data(Int) == 0);
 	Sachi_DecRef(Int);
 
 	Int = Sachi_NewIntFromValue(InInterpreter, 1);
-	Sachi_IncRef(Int);
-	assert(SachiInt_Data(Int) == 1);
+	Assert(SachiInt_Data(Int) == 1);
 	Sachi_DecRef(Int);
 }
 

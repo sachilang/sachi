@@ -1,3 +1,4 @@
+#include "test/test_case.h"
 #include "test/test_int.h"
 #include "test/test_string.h"
 #include "test/test_list.h"
@@ -9,7 +10,7 @@ extern "C"
 {
 #endif
 
-#include "sachi/interpreter.h"
+#include "sachi/object/interpreter.h"
 #include "sachi/object/dict.h"
 #include "sachi/object/list.h"
 #include "sachi/object/node.h"
@@ -20,10 +21,17 @@ extern "C"
 }
 #endif
 
+void run(void(*test)(Sachi_Interpreter*))
+{
+	Sachi_Interpreter* Interpreter = (Sachi_Interpreter*)Sachi_NewInterpreter(NULL);
+	assert(Interpreter != NULL);
+	test(Interpreter);
+	Sachi_DeleteInterpreter((Sachi_Object*)Interpreter);
+	assert(MemoryTracker.Next == NULL);
+}
+
 int main()
 {
-	Sachi_Interpreter* Interpreter = Sachi_NewInterpreter();
-	assert(Interpreter != NULL);
 	Sachi_InitType(&Sachi_BoolType);
 	Sachi_InitType(&Sachi_IntType);
 	Sachi_InitType(&Sachi_StringType);
@@ -31,10 +39,10 @@ int main()
 	Sachi_InitType(&Sachi_DictType);
 	Sachi_InitType(&Sachi_NodeType);
 
-	test_int(Interpreter);
-	test_string(Interpreter);
-	test_list(Interpreter);
-	test_dict(Interpreter);
-	test_node(Interpreter);
+	run(test_int);
+	run(test_string);
+	run(test_list);
+	run(test_dict);
+	run(test_node);
 	return 0;
 }

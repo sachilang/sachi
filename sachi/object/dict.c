@@ -1,8 +1,8 @@
 #include "sachi/object/dict.h"
+#include "sachi/object/interpreter.h"
 #include "sachi/sachi.h"
-#include "sachi/object/bool.h"
+#include "sachi/object/string.h"
 #include "sachi/object/node.h"
-#include "sachi/interpreter.h"
 
 typedef struct _Sachi_DictEntry _Sachi_DictEntry;
 typedef struct _Sachi_DictEntry
@@ -14,16 +14,24 @@ typedef struct _Sachi_DictEntry
 	LONG Hash;
 } _Sachi_DictEntry;
 
+Sachi_ObjectType _Sachi_DictEntryType = {
+	"_dictentry",
+	sizeof(_Sachi_DictEntry),
+	NULL, // base
+	NULL, // new
+	NULL, // delete
+	NULL, // nodes
+	NULL, // hash
+};
+
 static _Sachi_DictEntry* _Sachi_NewDictEntry(Sachi_Interpreter* InInterpreter)
 {
-	_Sachi_DictEntry* Value = (_Sachi_DictEntry*)sachi_malloc(sizeof(_Sachi_DictEntry));
+	_Sachi_DictEntry* Value = (_Sachi_DictEntry*)Sachi_NewObject(InInterpreter, &_Sachi_DictEntryType);
 	if (!Value)
 	{
-		SachiError_SetMemoryAllocation();
 		return NULL;
 	}
 
-	Sachi_NewObject(InInterpreter, Value, &Sachi_DictType);
 	Value->Next = NULL;
 	Value->Key = NULL;
 	Value->Value = NULL;
@@ -35,7 +43,6 @@ static _Sachi_DictEntry* _Sachi_NewDictEntry(Sachi_Interpreter* InInterpreter)
 static void _Sachi_DeleteDictEntry(Sachi_Object* InObject)
 {
 	_Sachi_DictEntry* Value = (_Sachi_DictEntry*)InObject;
-	Sachi_DecRef(Value->Next);
 	Value->Next = NULL;
 	Value->Hash = 0;
 	Sachi_DecRef(Value->Key);
@@ -73,6 +80,7 @@ static Sachi_NodeDef _Sachi_DictNodes[] = {
 
 Sachi_ObjectType Sachi_DictType = {
 	"dict",
+	sizeof(Sachi_Dict),
 	NULL, // base
 	_Sachi_NewDict,
 	_Sachi_DeleteDict,
@@ -82,14 +90,12 @@ Sachi_ObjectType Sachi_DictType = {
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewDict(Sachi_Interpreter* InInterpreter)
 {
-	Sachi_Dict* Value = (Sachi_Dict*)sachi_malloc(sizeof(Sachi_Dict));
+	Sachi_Dict* Value = (Sachi_Dict*)Sachi_NewObject(InInterpreter, &Sachi_DictType);
 	if (!Value)
 	{
-		SachiError_SetMemoryAllocation();
 		return NULL;
 	}
 
-	Sachi_NewObject(InInterpreter, Value, &Sachi_DictType);
 	Value->Entry = NULL;
 	Value->Size = 0;
 
@@ -107,19 +113,14 @@ SACHI_PUBLIC(void) Sachi_DeleteDict(Sachi_Object* InObject)
 {
 	Sachi_Dict* Dict = (Sachi_Dict*)InObject;
 	SachiDict_Clear(InObject);
-	_Sachi_DeleteDictEntry(Dict->Entry);
+	_Sachi_DeleteDictEntry((Sachi_Object*)Dict->Entry);
 	Dict->Entry = NULL;
 	Sachi_DeleteObject(InObject);
 }
 
-SACHI_PUBLIC(Sachi_Object*) SachiDict_Empty(Sachi_Object* InObject)
+SACHI_PUBLIC(int) SachiDict_Empty(Sachi_Object* InObject)
 {
-	if (((Sachi_Dict*)InObject)->Size == 0)
-	{
-		return Sachi_True;
-	}
-
-	return Sachi_False;
+	return ((Sachi_Dict*)InObject)->Size == 0;
 }
 
 SACHI_PUBLIC(sachi_size_t) SachiDict_Size(Sachi_Object* InObject)
@@ -171,18 +172,33 @@ SACHI_PUBLIC(int) SachiDict_SetItem(Sachi_Object* InObject, Sachi_Object* InKey,
 		Sachi_Dict* Dict = (Sachi_Dict*)InObject;
 		Entry->Next = Dict->Entry->Next;
 		Entry->Hash = Hash;
-		Entry->Key = InKey;
 		Dict->Entry->Next = Entry;
 		Dict->Size++;
-		Sachi_IncRef(InKey);
 	}
 
 	Sachi_Object* OldValue = Entry->Value;
+	Sachi_Object* OldKey = Entry->Key;
 	Entry->Value = InValue;
+	Entry->Key = InKey;
 	Sachi_IncRef(InValue);
 	Sachi_DecRef(OldValue);
+	Sachi_IncRef(InKey);
+	Sachi_DecRef(OldKey);
 
 	return SACHI_OK;
+}
+
+SACHI_PUBLIC(int) SachiDict_SetItemFromBuffer(Sachi_Object* InObject, const char* InBuffer, Sachi_Object* InValue)
+{
+	return SachiDict_SetItemFromBufferAndLength(InObject, InBuffer, sachi_strlen(InBuffer), InValue);
+}
+
+SACHI_PUBLIC(int) SachiDict_SetItemFromBufferAndLength(Sachi_Object* InObject, const char* InBuffer, sachi_size_t InLength, Sachi_Object* InValue)
+{
+	Sachi_Object* Key = Sachi_NewStringFromBufferAndLength(InObject->Interpreter, InBuffer, InLength);
+	int Result = SachiDict_SetItem(InObject, Key, InValue);
+	Sachi_DecRef(Key);
+	return Result;
 }
 
 SACHI_PUBLIC(int) SachiDict_GetItem(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object** OutItem)
@@ -193,7 +209,22 @@ SACHI_PUBLIC(int) SachiDict_GetItem(Sachi_Object* InObject, Sachi_Object* InKey,
 		return SACHI_ERROR;
 	}
 
-	_Sachi_DictEntry* Entry = (_Sachi_DictEntry*)_SachiDict_FindEntry(InObject, Hash, NULL);
+	return SachiDict_GetItemFromHash(InObject, Hash, OutItem);
+}
+
+SACHI_PUBLIC(int) SachiDict_GetItemFromBuffer(Sachi_Object* InObject, const char* InBuffer, Sachi_Object** OutItem)
+{
+	return SachiDict_GetItemFromBufferAndLength(InObject, InBuffer, sachi_strlen(InBuffer), OutItem);
+}
+
+SACHI_PUBLIC(int) SachiDict_GetItemFromBufferAndLength(Sachi_Object* InObject, const char* InBuffer, sachi_size_t InLength, Sachi_Object** OutItem)
+{
+	return SachiDict_GetItemFromHash(InObject, Sachi_HashFromBufferAndLength(InBuffer, InLength), OutItem);
+}
+
+SACHI_PUBLIC(int) SachiDict_GetItemFromHash(Sachi_Object* InObject, LONG InHash, Sachi_Object** OutItem)
+{
+	_Sachi_DictEntry* Entry = (_Sachi_DictEntry*)_SachiDict_FindEntry(InObject, InHash, NULL);
 	if (!Entry)
 	{
 		*OutItem = NULL;

@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#include "sachi/interpreter.h"
+#include "sachi/object/interpreter.h"
 #include "sachi/object/string.h"
 #include "sachi/object/bool.h"
 
@@ -24,12 +24,11 @@ void test_string(Sachi_Interpreter* InInterpreter)
 
 	// Create string
 	Sachi_Object* String = Sachi_NewStringFromBuffer(InInterpreter, _SACHI_TEST_STRING);
-	Sachi_IncRef(String);
 	assert(String != NULL);
 	assert(String->Type != NULL);
 	assert(String->Interpreter != NULL);
 	assert(SachiString_Size(String) == strlen(_SACHI_TEST_STRING));
-	assert(Sachi_IsFalse(SachiString_Empty(String)));
+	assert(SachiString_Empty(String));
 
 	Sachi_DecRef(String);
 }

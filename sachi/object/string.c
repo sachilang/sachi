@@ -1,6 +1,6 @@
 #include "sachi/object/string.h"
 #include "sachi/sachi.h"
-#include "sachi/interpreter.h"
+#include "sachi/object/interpreter.h"
 #include "sachi/object/node.h"
 #include "sachi/object/bool.h"
 
@@ -23,15 +23,8 @@ static int _SachiString_Init(Sachi_Interpreter* InInterpreter, Sachi_Object* InO
 
 static LONG _SachiString_Hash(Sachi_Object* InObject)
 {
-	LONG result = 0x55555555;
-
-	const char* Buffer = SachiString_Data(InObject);
-	while (*Buffer != '\0') {
-		result ^= *Buffer++;
-		result <<= 5;
-	}
-
-	return result;
+	Sachi_String* String = (Sachi_String*)InObject;
+	return Sachi_HashFromBufferAndLength(String->Buffer, String->Size);
 }
 
 static Sachi_NodeDef _Sachi_StringNodes[] = {
@@ -40,6 +33,7 @@ static Sachi_NodeDef _Sachi_StringNodes[] = {
 
 Sachi_ObjectType Sachi_StringType = {
 	"string",
+	sizeof(Sachi_String),
 	NULL, // base
 	NULL, // new
 	_Sachi_DeleteString,
@@ -49,14 +43,12 @@ Sachi_ObjectType Sachi_StringType = {
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewString(Sachi_Interpreter* InInterpreter)
 {
-	Sachi_String* Value = (Sachi_String*)sachi_malloc(sizeof(Sachi_String));
+	Sachi_String* Value = (Sachi_String*)Sachi_NewObject(InInterpreter, &Sachi_StringType);
 	if (!Value)
 	{
-		SachiError_SetMemoryAllocation();
 		return NULL;
 	}
-
-	Sachi_NewObject(InInterpreter, Value, &Sachi_StringType);
+ 
 	Value->Buffer = NULL;
 	Value->Size = 0;
 

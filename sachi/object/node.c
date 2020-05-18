@@ -1,7 +1,7 @@
 #include "sachi/object/node.h"
 #include "sachi/object/pin.h"
 #include "sachi/object/list.h"
-#include "sachi/interpreter.h"
+#include "sachi/object/interpreter.h"
 
 typedef struct _Sachi_Node
 {
@@ -32,6 +32,7 @@ static Sachi_NodeDef _Sachi_NodeNodes[] = {
 
 Sachi_ObjectType Sachi_NodeType = {
 	"node",
+	sizeof(Sachi_Node),
 	NULL, // base
 	_Sachi_NewNode,
 	_Sachi_DeleteNode,
@@ -41,14 +42,12 @@ Sachi_ObjectType Sachi_NodeType = {
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewNode(Sachi_Interpreter* InInterpreter)
 {
-	Sachi_Node* Value = (Sachi_Node*)sachi_malloc(sizeof(Sachi_Node));
+	Sachi_Node* Value = (Sachi_Node*)Sachi_NewObject(InInterpreter, &Sachi_NodeType);
 	if (!Value)
 	{
-		SachiInterpreter_MemoryAllocationError(InInterpreter);
 		return NULL;
 	}
 
-	Sachi_NewObject(InInterpreter, Value, &Sachi_NodeType);
 	Value->Defition = NULL;
 	Value->Pins = NULL;
 	Value->Children = NULL;
@@ -104,13 +103,18 @@ SACHI_PUBLIC(int) SachiNode_SetDefition(Sachi_Object* InObject, Sachi_NodeDef* I
 	Sachi_PinDef* PinDef = InDefinition->Pins;
 	while (PinDef && PinDef->Name != NULL)
 	{
-		Sachi_Pin* Pin = Sachi_NewPin(Node->Interpreter);
+		Sachi_Object* Pin = Sachi_NewPin(Node->Interpreter);
 		if (!Pin)
 		{
 			return SACHI_ERROR;
 		}
 		SachiPin_SetDefition(Pin, PinDef);
-		SachiList_Push(Node->Pins, Pin);
+		if (SachiList_Push(Node->Pins, Pin) != SACHI_OK)
+		{
+			Sachi_DecRef(Pin);
+			return SACHI_ERROR;
+		}
+		Sachi_DecRef(Pin);
 		PinDef++;
 	}
 
@@ -125,7 +129,12 @@ SACHI_PUBLIC(int) SachiNode_SetDefition(Sachi_Object* InObject, Sachi_NodeDef* I
 			return SACHI_ERROR;
 		}
 		SachiNode_SetDefition(Child, ChildDef);
-		SachiList_Push(Node->Children, Child);
+		if (SachiList_Push(Node->Children, Child) != SACHI_OK)
+		{
+			Sachi_DecRef(Child);
+			return SACHI_ERROR;
+		}
+		Sachi_DecRef(Child);
 		ChildDef++;
 	}
 
@@ -173,7 +182,8 @@ SACHI_PUBLIC(Sachi_Object*) SachiNode_GetChild(Sachi_Object* InObject, const cha
 	sachi_size_t Size = SachiList_Size(Items);
 	for (sachi_size_t I = 0; I < Size; ++I)
 	{
-		if (sachi_strcmp(SachiNode_GetName(*Items), InName) == 0)
+		const char* Name = SachiNode_GetName(*Items);
+		if (sachi_strcmp(Name, InName) == 0)
 		{
 			return *Items;
 		}

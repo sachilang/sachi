@@ -1,19 +1,15 @@
 #include "sachi/object/bool.h"
+#include "sachi/object/interpreter.h"
 #include "sachi/sachi.h"
-#include "sachi/interpreter.h"
 
-static Sachi_Object* _Sachi_NewBool(Sachi_Interpreter* InInterpreter)
+typedef struct _Sachi_Bool
 {
-	return Sachi_NewBool(InInterpreter);
-}
-
-static void _Sachi_DeleteBool(Sachi_Object* InObject)
-{
-	Sachi_DeleteBool(InObject);
-}
+	SACHI_OBJECT_HEADER
+} Sachi_Bool;
 
 Sachi_ObjectType Sachi_BoolType = {
 	"bool",
+	sizeof(Sachi_Bool),
 	NULL, // base
 	NULL, // new
 	NULL, // delete
@@ -21,34 +17,12 @@ Sachi_ObjectType Sachi_BoolType = {
 	NULL, // hash
 };
 
-Sachi_Bool _Sachi_False = {
-	{
-		&Sachi_BoolType
-	}
-};
-
-Sachi_Bool _Sachi_True = {
-	{
-		&Sachi_BoolType
-	}
-};
-
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewBool(Sachi_Object* InObject)
+SACHI_PUBLIC(Sachi_Object*) Sachi_NewBool(Sachi_Interpreter* InInterpreter)
 {
-	if (InObject)
-	{
-		return Sachi_True;
-	}
-
-	return Sachi_False;
+	return Sachi_NewObject(InInterpreter, &Sachi_BoolType);
 }
 
-SACHI_PUBLIC(Sachi_Object*) Sachi_IsBool(Sachi_Object* InObject)
+SACHI_PUBLIC(void) Sachi_DeleteBool(Sachi_Object* InObject)
 {
-	if (InObject->Type == &Sachi_BoolType)
-	{
-		return Sachi_True;
-	}
-
-	return Sachi_False;
+	Sachi_DeleteObject(InObject);
 }

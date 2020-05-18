@@ -1,5 +1,5 @@
 #include "sachi/object/pin.h"
-#include "sachi/interpreter.h"
+#include "sachi/object/interpreter.h"
 
 typedef struct _Sachi_Pin
 {
@@ -27,7 +27,8 @@ static Sachi_PinDef _Sachi_PinNodes[] = {
 };
 
 Sachi_ObjectType Sachi_PinType = {
-	"Pin",
+	"pin",
+	sizeof(Sachi_Pin),
 	NULL, // base
 	_Sachi_NewPin,
 	_Sachi_DeletePin,
@@ -37,14 +38,12 @@ Sachi_ObjectType Sachi_PinType = {
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewPin(Sachi_Interpreter* InInterpreter)
 {
-	Sachi_Pin* Value = (Sachi_Pin*)sachi_malloc(sizeof(Sachi_Pin));
+	Sachi_Pin* Value = (Sachi_Pin*)Sachi_NewObject(InInterpreter, &Sachi_PinType);
 	if (!Value)
 	{
-		SachiInterpreter_MemoryAllocationError(InInterpreter);
 		return NULL;
 	}
 
-	Sachi_NewObject(InInterpreter, Value, &Sachi_PinType);
 	Value->Defition = NULL;
 
 	return (Sachi_Object*)Value;

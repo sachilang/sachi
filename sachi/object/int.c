@@ -1,6 +1,6 @@
 #include "sachi/object/int.h"
+#include "sachi/object/interpreter.h"
 #include "sachi/sachi.h"
-#include "sachi/interpreter.h"
 #include "sachi/object/node.h"
 #include "sachi/object/bool.h"
 
@@ -17,6 +17,7 @@ static void _Sachi_DeleteInt(Sachi_Object* InObject)
 
 Sachi_ObjectType Sachi_IntType = {
 	"int",
+	sizeof(Sachi_Int),
 	NULL, // base
 	NULL, // new
 	_Sachi_DeleteInt,
@@ -31,14 +32,12 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewInt(Sachi_Interpreter* InInterpreter)
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewIntFromValue(Sachi_Interpreter* InInterpreter, sachi_ssize_t InValue)
 {
-	Sachi_Int* Value = (Sachi_Int*)sachi_malloc(sizeof(Sachi_Int));
+	Sachi_Int* Value = (Sachi_Int*)Sachi_NewObject(InInterpreter, &Sachi_IntType);
 	if (!Value)
 	{
-		SachiError_SetMemoryAllocation();
 		return NULL;
 	}
 
-	Sachi_NewObject(InInterpreter, Value, &Sachi_IntType);
 	Value->Value = InValue;
 
 	return (Sachi_Object*)Value;

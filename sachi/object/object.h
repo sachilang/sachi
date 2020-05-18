@@ -26,6 +26,7 @@ typedef struct _Sachi_ObjectType Sachi_ObjectType;
 typedef struct _Sachi_ObjectType
 {
 	char* Name; // Unique name used to reference this type
+    sachi_size_t SizeOf; // Result of sizeof(type)
 	Sachi_ObjectType* Base; // Base type
 	SachiObject_New New; // Constructor
 	SachiObject_Delete Delete; // Destructor
@@ -97,7 +98,7 @@ typedef struct _Sachi_Object
  * :param InObject: object to initialize
  * :param InType: object's type
  */
-SACHI_PUBLIC(void) Sachi_NewObject(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_ObjectType* InType);
+SACHI_PUBLIC(Sachi_Object*) Sachi_NewObject(Sachi_Interpreter* InInterpreter, Sachi_ObjectType* InType);
 
 /**
  * Clean and free up an object.

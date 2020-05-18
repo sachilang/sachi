@@ -50,6 +50,8 @@ project "sachiexe"
 		"sachi/*.cpp",
 		"sachi/object/*.h",
 		"sachi/object/*.c",
+		"sachi/node/*.h",
+		"sachi/node/*.c",
 	}
 
 	includedirs {
@@ -82,6 +84,8 @@ project "test"
 		"sachi/*.c",
 		"sachi/object/*.h",
 		"sachi/object/*.c",
+		"sachi/node/*.h",
+		"sachi/node/*.c",
 		"test/*.h",
 		"test/*.cpp",
 	}
