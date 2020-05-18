@@ -86,3 +86,34 @@ SACHI_PUBLIC(void) Sachi_UntrackObject(Sachi_Object* InObject)
 	}
 }
 #endif
+
+SACHI_PUBLIC(int) Sachi_ReadFile(const char* InFilename, char** OutBuffer, sachi_size_t* OutSize)
+{
+	if (!InFilename)
+	{
+		return SACHI_ERROR;
+	}
+
+	sachi_FILE* F = sachi_fopen(InFilename, "rb");
+	if (!F)
+	{
+		return SACHI_ERROR;
+	}
+
+	sachi_fseek(F, 0, sachi_SEEK_END);
+	sachi_size_t Size = (sachi_size_t)sachi_ftell(F);
+	sachi_fseek(F, 0, sachi_SEEK_SET);
+	char* Buffer = (char*)sachi_malloc((LONG)sizeof(char) * (Size + 1));
+	if (!Buffer)
+	{
+		return SACHI_ERROR;
+	}
+
+	*OutSize = Size + 1;
+	*OutBuffer = Buffer;
+
+	sachi_fread((void*)Buffer, sizeof(char), Size, F);
+	sachi_fclose(F);
+	Buffer[Size] = '\0';
+	return SACHI_OK;
+}

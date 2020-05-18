@@ -31,6 +31,9 @@ SACHI_PUBLIC(void) Sachi_TrackObject(Sachi_Object* InObject);
 SACHI_PUBLIC(void) Sachi_UntrackObject(Sachi_Object* InObject);
 #endif
 
+
+SACHI_PUBLIC(int) Sachi_ReadFile(const char* InFilename, char** OutBuffer, sachi_size_t* OutSize);
+
 #ifdef __cplusplus
 }
 #endif

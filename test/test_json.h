@@ -34,9 +34,16 @@ void test_json(Sachi_Interpreter* InInterpreter)
 	Assert(SachiDict_SetItemFromBuffer(KwArgs, "s", S) == SACHI_OK);
 	Sachi_DecRef(S);
 
-	Assert(SachiNode_Call(Loads, NULL, KwArgs, NULL, NULL) == SACHI_OK);
+	Sachi_Object* KwResults = Sachi_NewDict(InInterpreter);
+	Assert(SachiNode_Call(Loads, NULL, KwArgs, NULL, KwResults) == SACHI_OK);
+
+	Sachi_Object* Result = NULL;
+	SachiDict_GetItemFromBuffer(KwResults, "o", &Result);
+
+	Assert(SachiDict_Size(Result) == 1);
 
 	Sachi_DecRef(KwArgs);
+	Sachi_DecRef(KwResults);
 	Sachi_DecRef(Node);
 }
 
