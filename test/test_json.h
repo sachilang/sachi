@@ -19,15 +19,12 @@ extern "C" {
 }
 #endif
 
-static const char* JSON_STRING = "{\"key\": \"value\"}";
+static const char* JSON_STRING = "{\"key\": \"value\", \"list\": [\"value\", \"value\"]}";
 
-void test_json(Sachi_Interpreter* InInterpreter)
+void test_json_loads(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
 {
-	Sachi_Object* Node = Sachi_NewJSON(InInterpreter);
-	Assert(Node != NULL);
-
-	Sachi_Object* Loads = SachiNode_GetChild(Node, "loads");
-	Assert(Loads != NULL);
+	Sachi_Object* Callback = SachiNode_GetChild(InNode, "loads");
+	Assert(Callback != NULL);
 
 	Sachi_Object* KwArgs = Sachi_NewDict(InInterpreter);
 	Sachi_Object* S = Sachi_NewStringFromBuffer(InInterpreter, JSON_STRING);
@@ -35,15 +32,47 @@ void test_json(Sachi_Interpreter* InInterpreter)
 	Sachi_DecRef(S);
 
 	Sachi_Object* KwResults = Sachi_NewDict(InInterpreter);
-	Assert(SachiNode_Call(Loads, NULL, KwArgs, NULL, KwResults) == SACHI_OK);
+	Assert(SachiNode_Call(Callback, NULL, KwArgs, NULL, KwResults) == SACHI_OK);
 
 	Sachi_Object* Result = NULL;
 	SachiDict_GetItemFromBuffer(KwResults, "o", &Result);
 
-	Assert(SachiDict_Size(Result) == 1);
+	Assert(SachiDict_Size(Result) == 2);
+	std::cout << Result->Type->ToString(Result) << std::endl;
 
 	Sachi_DecRef(KwArgs);
 	Sachi_DecRef(KwResults);
+}
+
+void test_json_load(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
+{
+	Sachi_Object* Callback = SachiNode_GetChild(InNode, "load");
+	Assert(Callback != NULL);
+
+	Sachi_Object* KwArgs = Sachi_NewDict(InInterpreter);
+	Sachi_Object* S = Sachi_NewStringFromBuffer(InInterpreter, "test/test.json");
+	Assert(SachiDict_SetItemFromBuffer(KwArgs, "s", S) == SACHI_OK);
+	Sachi_DecRef(S);
+
+	Sachi_Object* KwResults = Sachi_NewDict(InInterpreter);
+	Assert(SachiNode_Call(Callback, NULL, KwArgs, NULL, KwResults) == SACHI_OK);
+
+	Sachi_Object* Result = NULL;
+	SachiDict_GetItemFromBuffer(KwResults, "o", &Result);
+	std::cout << Result->Type->ToString(Result) << std::endl;
+
+	Sachi_DecRef(KwArgs);
+	Sachi_DecRef(KwResults);
+}
+
+void test_json(Sachi_Interpreter* InInterpreter)
+{
+	Sachi_Object* Node = Sachi_NewJSON(InInterpreter);
+	Assert(Node != NULL);
+
+	test_json_loads(InInterpreter, Node);
+	test_json_load(InInterpreter, Node);
+
 	Sachi_DecRef(Node);
 }
 

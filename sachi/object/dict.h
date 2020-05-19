@@ -29,6 +29,7 @@ SACHI_PUBLIC(int) SachiDict_GetItemFromBufferAndLength(Sachi_Object* InObject, c
 SACHI_PUBLIC(int) SachiDict_GetItemFromHash(Sachi_Object* InObject, LONG InHash, Sachi_Object** OutItem);
 SACHI_PUBLIC(int) SachiDict_RemoveItem(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object** OutItem);
 SACHI_PUBLIC(void) SachiDict_Clear(Sachi_Object* InObject);
+SACHI_PUBLIC(const char*) SachiDict_ToString(Sachi_Object* InObject);
 
 #ifdef __cplusplus
 }

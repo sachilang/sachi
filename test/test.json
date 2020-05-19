@@ -1,43 +1,36 @@
 {
-	"name": "math",
-	"imports": [
-		{"module": "sachi.lang", "name": "lang"},
-		{"module": "sachi.io", "name": "io"}
-	],
-	"nodes": [
-		{
-			"label": "And",
-			"name": "and",
-			"pins": [
-				{"label": "A", "mode": "value", "side": "in", "type": "bool", "name": "a"},
-				{"label": "B", "mode": "value", "side": "in", "type": "bool", "name": "b"},
-				{"label": "Out", "mode": "value", "side": "out", "type": "bool", "name": "out"}
-			],
-			"children": [
-			
-			],
-			"links": [
-			
-			]
-		}
-	],
-	"pins": [
-		{"label": "", "mode": "exec", "side": "in", "name": "execin"},
-		{"label": "", "mode": "exec", "side": "out", "name": "execout"}
-	],
-	"flow": {
-		"instances": [
-			{"path": "true", "name": "true"},
-			{"path": "false", "name": "false"},
-			{"path": "and", "name": "and"},
-			{"path": "print", "name": "print"}
-		],
-		"links": [
-			{"from": "this.execin", "to": "print.execin"},
-			{"from": "print.execout", "to": "this.execout"},
-			{"from": "true.out", "to": "and.a"},
-			{"from": "false.out", "to": "and.b"},
-			{"from": "and.out", "to": "print.in"}
-		]
-	}
+  "name":"math",
+  "nodes":[
+    {
+      "name":"min",
+      "inputs":[
+        {"mode":"value", "name":"a"},
+        {"mode":"value", "name":"b"}
+      ],
+      "outputs":[
+        {"mode":"value", "name":"out"}
+      ],
+      "flow":[
+        {"node":"lte", "name":"lte0"},
+        {"node":"select", "name":"select0"},
+        {"from":"this.a", "to":"lte0.a"},
+        {"from":"this.b", "to":"lte0.b"},
+        {"from":"lte0.out", "to":"select0.cond"},
+        {"from":"this.a", "to":"select0.a"},
+        {"from":"this.b", "to":"select0.b"},
+        {"from":"select0.out", "to":"this.out"}
+      ]
+    }
+  ],
+  "flow":[
+    {"node":"min", "name":"min0"},
+    {"node":"int", "name":"int0", "value":"0"},
+    {"node":"int", "name":"int1", "value":"1"},
+    {"node":"print", "name":"print0"},
+    {"from":"int0.out", "to":"min0.a"},
+    {"from":"int1.out", "to":"min0.b"},
+    {"from":"min0.out", "to":"print0.value"},
+    {"from":"this.execin", "to":"print0.execin"},
+    {"from":"print0.execout", "to":"print0.execout"}
+  ]
 }

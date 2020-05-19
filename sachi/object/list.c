@@ -26,6 +26,11 @@ static int _SachiList_Init(Sachi_Interpreter* InInterpreter, Sachi_Object* InObj
 	return SACHI_OK;
 }
 
+static const char* _SachiList_ToString(Sachi_Object* InObject)
+{
+	return SachiList_ToString(InObject);
+}
+
 static Sachi_NodeDef _Sachi_ListNodes[] = {
 	{"init", &_SachiList_Init}
 };
@@ -37,7 +42,8 @@ Sachi_ObjectType Sachi_ListType = {
 	_Sachi_NewList,
 	_Sachi_DeleteList,
 	_Sachi_ListNodes,
-	NULL, // hash
+	NULL, // hash,
+	_SachiList_ToString
 };
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewList(Sachi_Interpreter* InInterpreter)
@@ -219,6 +225,33 @@ SACHI_PUBLIC(void) SachiList_Clear(Sachi_Object* InObject)
 	}
 
 	List->Size = 0;
+}
+
+SACHI_PUBLIC(const char*) SachiList_ToString(Sachi_Object* InObject)
+{
+	Sachi_List* List = (Sachi_List*)InObject;
+
+	char* Buffer = sachi_malloc(sizeof(char) * 2);
+	Buffer[0] = '[';
+	Buffer[1] = '\0';
+	const char* Tmp = Buffer;
+	Sachi_Object** Entry = List->Items;
+	for (sachi_size_t I = List->Size; I > 0; --I)
+	{
+		const char* Result = Sachi_Join(Tmp, (*Entry)->Type->ToString(*Entry));
+		sachi_free(Tmp);
+		Tmp = Result;
+		if (I > 1)
+		{
+			Result = Sachi_Join(Tmp, ", ");
+			sachi_free(Tmp);
+			Tmp = Result;
+		}
+		Entry++;
+	}
+	const char* Result = Sachi_Join(Tmp, "]");
+	sachi_free(Tmp);
+	return Result;
 }
 
 SACHI_PUBLIC(Sachi_Object**) SachiList_Data(Sachi_Object* InObject)

@@ -33,6 +33,11 @@ SACHI_PUBLIC(int) Sachi_InitType(Sachi_ObjectType* InType)
 		InType->Hash = InType->Base->Hash;
 	}
 
+	if (!InType->ToString)
+	{
+		InType->ToString = InType->Base->ToString;
+	}
+
 	return SACHI_OK;
 }
 

@@ -117,3 +117,14 @@ SACHI_PUBLIC(int) Sachi_ReadFile(const char* InFilename, char** OutBuffer, sachi
 	Buffer[Size] = '\0';
 	return SACHI_OK;
 }
+
+SACHI_PUBLIC(const char*) Sachi_Join(const char* InLeft, const char* InRight)
+{
+	sachi_size_t LeftSize = sachi_strlen(InLeft);
+	sachi_size_t RightSize = sachi_strlen(InRight);
+	char* Buffer = (const char*)sachi_malloc(sizeof(char) * (LeftSize + RightSize + 1));
+	sachi_memcpy(Buffer, InLeft, LeftSize);
+	sachi_memcpy(&Buffer[LeftSize], InRight, RightSize);
+	Buffer[LeftSize + RightSize] = '\0';
+	return Buffer;
+}

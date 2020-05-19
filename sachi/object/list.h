@@ -30,6 +30,7 @@ SACHI_PUBLIC(int) SachiList_GetItem(Sachi_Object* InObject, sachi_size_t InIndex
 SACHI_PUBLIC(Sachi_Object*) SachiList_Front(Sachi_Object* InObject);
 SACHI_PUBLIC(Sachi_Object*) SachiList_Back(Sachi_Object* InObject);
 SACHI_PUBLIC(void) SachiList_Clear(Sachi_Object* InObject);
+SACHI_PUBLIC(const char*) SachiList_ToString(Sachi_Object* InObject);
 
 /**
  * Get the underlying allocated memory array.

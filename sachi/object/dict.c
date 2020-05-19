@@ -22,6 +22,7 @@ Sachi_ObjectType _Sachi_DictEntryType = {
 	NULL, // delete
 	NULL, // nodes
 	NULL, // hash
+	NULL, // to string
 };
 
 static _Sachi_DictEntry* _Sachi_NewDictEntry(Sachi_Interpreter* InInterpreter)
@@ -52,6 +53,16 @@ static void _Sachi_DeleteDictEntry(Sachi_Object* InObject)
 	Sachi_DeleteObject(InObject);
 }
 
+const char* _SachiDictEntry_ToString(Sachi_Object* InObject)
+{
+	_Sachi_DictEntry* Value = (_Sachi_DictEntry*)InObject;
+
+	const char* Tmp = Sachi_Join(Value->Key->Type->ToString(Value->Key), ": ");
+	const char* Result = Sachi_Join(Tmp, Value->Value->Type->ToString(Value->Value));
+	sachi_free(Tmp);
+	return Result;
+}
+
 typedef struct _Sachi_Dict
 {
 	SACHI_OBJECT_HEADER
@@ -74,6 +85,11 @@ static int _SachiDict_Init(Sachi_Interpreter* InInterpreter, Sachi_Object* InObj
 	return SACHI_OK;
 }
 
+const char* _SachiDict_ToString(Sachi_Object* InObject)
+{
+	return SachiDict_ToString(InObject);
+}
+
 static Sachi_NodeDef _Sachi_DictNodes[] = {
 	{"init", &_SachiDict_Init}
 };
@@ -86,6 +102,7 @@ Sachi_ObjectType Sachi_DictType = {
 	_Sachi_DeleteDict,
 	_Sachi_DictNodes,
 	NULL, // hash
+	_SachiDict_ToString
 };
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewDict(Sachi_Interpreter* InInterpreter)
@@ -273,4 +290,31 @@ SACHI_PUBLIC(void) SachiDict_Clear(Sachi_Object* InObject)
 	}
 
 	Dict->Size = 0;
+}
+
+SACHI_PUBLIC(const char*) SachiDict_ToString(Sachi_Object* InObject)
+{
+	Sachi_Dict* Dict = (Sachi_Dict*)InObject;
+
+	char* Buffer = sachi_malloc(sizeof(char) * 2);
+	Buffer[0] = '{';
+	Buffer[1] = '\0';
+	const char* Tmp = Buffer;
+	_Sachi_DictEntry* Entry = Dict->Entry->Next;
+	while (Entry)
+	{
+		const char* Result = Sachi_Join(Tmp, _SachiDictEntry_ToString(Entry));
+		sachi_free(Tmp);
+		Tmp = Result;
+		if (Entry->Next)
+		{
+			Result = Sachi_Join(Tmp, ", ");
+			sachi_free(Tmp);
+			Tmp = Result;
+		}
+		Entry = Entry->Next;
+	}
+	const char* Result = Sachi_Join(Tmp, "}");
+	sachi_free(Tmp);
+	return Result;
 }

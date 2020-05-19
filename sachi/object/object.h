@@ -16,6 +16,7 @@ typedef struct _Sachi_NodeDef Sachi_NodeDef;
 typedef Sachi_Object* (*SachiObject_New)(Sachi_Interpreter*);
 typedef void (*SachiObject_Delete)(Sachi_Object*);
 typedef LONG (*SachiObject_Hash)(Sachi_Object*);
+typedef const char*(*SachiObject_ToString)(Sachi_Object*);
 
 typedef struct _Sachi_Dict Sachi_Dict;
 
@@ -32,6 +33,7 @@ typedef struct _Sachi_ObjectType
 	SachiObject_Delete Delete; // Destructor
 	Sachi_NodeDef* Nodes; // Nodes/methods
 	SachiObject_Hash Hash; // Hash function
+    SachiObject_ToString ToString; // ToString function
 } Sachi_ObjectType;
 
 /**

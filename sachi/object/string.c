@@ -21,10 +21,14 @@ static int _SachiString_Init(Sachi_Interpreter* InInterpreter, Sachi_Object* InO
 	return SACHI_OK;
 }
 
-static LONG _SachiString_Hash(Sachi_Object* InObject)
+LONG _SachiString_Hash(Sachi_Object* InObject)
 {
-	Sachi_String* String = (Sachi_String*)InObject;
-	return Sachi_HashFromBufferAndLength(String->Buffer, String->Size);
+	return SachiString_Hash(InObject);
+}
+
+const char* _SachiString_ToString(Sachi_Object* InObject)
+{
+	return SachiString_ToString(InObject);
 }
 
 static Sachi_NodeDef _Sachi_StringNodes[] = {
@@ -38,7 +42,8 @@ Sachi_ObjectType Sachi_StringType = {
 	NULL, // new
 	_Sachi_DeleteString,
 	_Sachi_StringNodes,
-	_SachiString_Hash, // hash
+	_SachiString_Hash,
+	_SachiString_ToString,
 };
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewString(Sachi_Interpreter* InInterpreter)
@@ -106,6 +111,17 @@ SACHI_PUBLIC(Sachi_Object*) SachiString_Empty(Sachi_Object* InObject)
 SACHI_PUBLIC(sachi_size_t) SachiString_Size(Sachi_Object* InObject)
 {
 	return ((Sachi_String*)InObject)->Size;
+}
+
+SACHI_PUBLIC(LONG) SachiString_Hash(Sachi_Object* InObject)
+{
+	Sachi_String* String = (Sachi_String*)InObject;
+	return Sachi_HashFromBufferAndLength(String->Buffer, String->Size);
+}
+
+SACHI_PUBLIC(const char*) SachiString_ToString(Sachi_Object* InObject)
+{
+	return ((Sachi_String*)InObject)->Buffer;
 }
 
 SACHI_PUBLIC(const char*) SachiString_Data(Sachi_Object* InObject)

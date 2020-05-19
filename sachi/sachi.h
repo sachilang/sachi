@@ -33,6 +33,7 @@ SACHI_PUBLIC(void) Sachi_UntrackObject(Sachi_Object* InObject);
 
 
 SACHI_PUBLIC(int) Sachi_ReadFile(const char* InFilename, char** OutBuffer, sachi_size_t* OutSize);
+SACHI_PUBLIC(const char*) Sachi_Join(const char* InLeft, const char* InRight);
 
 #ifdef __cplusplus
 }

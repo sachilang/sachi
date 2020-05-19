@@ -22,6 +22,8 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewStringFromBufferAndLength(Sachi_Interpreter
 SACHI_PUBLIC(void) Sachi_DeleteString(Sachi_Object* InObject);
 SACHI_PUBLIC(Sachi_Object*) SachiString_Empty(Sachi_Object* InObject);
 SACHI_PUBLIC(sachi_size_t) SachiString_Size(Sachi_Object* InObject);
+SACHI_PUBLIC(LONG) SachiString_Hash(Sachi_Object* InObject);
+SACHI_PUBLIC(const char*) SachiString_ToString(Sachi_Object* InObject);
 
 /**
  * Get the underlying allocated memory array.
