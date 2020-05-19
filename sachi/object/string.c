@@ -3,6 +3,7 @@
 #include "sachi/object/interpreter.h"
 #include "sachi/object/node.h"
 #include "sachi/object/bool.h"
+#include "sachi/nodemetadata.h"
 
 typedef struct _Sachi_String
 {
@@ -31,7 +32,7 @@ const char* _SachiString_ToString(Sachi_Object* InObject)
 	return SachiString_ToString(InObject);
 }
 
-static Sachi_NodeDef _Sachi_StringNodes[] = {
+static Sachi_NodeMetadata _Sachi_StringNodes[] = {
 	{"init", &_SachiString_Init}
 };
 

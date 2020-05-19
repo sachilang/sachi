@@ -2,6 +2,7 @@
 #include "sachi/sachi.h"
 #include "sachi/object/bool.h"
 #include "sachi/object/node.h"
+#include "sachi/nodemetadata.h"
 
 typedef struct _Sachi_List
 {
@@ -31,7 +32,7 @@ static const char* _SachiList_ToString(Sachi_Object* InObject)
 	return SachiList_ToString(InObject);
 }
 
-static Sachi_NodeDef _Sachi_ListNodes[] = {
+static Sachi_NodeMetadata _Sachi_ListNodes[] = {
 	{"init", &_SachiList_Init}
 };
 

@@ -9,43 +9,46 @@ extern "C"
 #include "sachi/config.h"
 #include "sachi/posix.h"
 #include "sachi/object/object.h"
+#include "sachi/pinmetadata.h"
 
 typedef struct _Sachi_Interpreter Sachi_Interpreter;
 
+/**
+ * Representation of a pin's metadata in the language.
+ */
 extern Sachi_ObjectType Sachi_PinType;
 
 #define Sachi_CheckPin(o) (o->Type == &Sachi_PinType)
 
-#define SACHI_PINMODE_EXEC 0x1
-#define SACHI_PINMODE_VALUE 0x2
-#define SACHI_PINSIDE_IN 0x1
-#define SACHI_PINSIDE_OUT 0x2
-
-#define Sachi_PinMode unsigned char
-#define Sachi_PinSide unsigned char
-    
 /**
- * Definition of a pin.
- *
- * This is how a pin is described externally.
- */
-typedef struct _Sachi_PinDef
-{
-    const char* Label; // Display only label
-    const char* Name; // Unique name to reference this pin
-    Sachi_PinMode Mode;
-    Sachi_PinSide Side;
-    const char* Type;
-    const char* Default;
-} Sachi_PinDef;
-
-/**
- * Create a new pin with an empty definition.
+ * Create a new pin with empty metadata.
  *
  * :param InInterpreter: interpreter instance
  * :return: new pin
  */
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewPin(Sachi_Interpreter* InInterpreter);
+
+/**
+ * Create a new pin.
+ *
+ * Pin's metadata are initialized from external metadata.
+ *
+ * :param InInterpreter: interpreter instance
+ * :param InMetadata: metadata
+ * :return: new pin
+ */
+SACHI_PUBLIC(Sachi_Object*) Sachi_NewPinFromMetadata(Sachi_Interpreter* InInterpreter, Sachi_PinMetadata* InMetadata);
+
+/**
+ * Create a new pin with an empty definition.
+ *
+ * Pin's metadata are initialized from dict.
+ *
+ * :param InInterpreter: interpreter instance
+ * :param InDict: dict containing metadata
+ * :return: new pin
+ */
+SACHI_PUBLIC(Sachi_Object*) Sachi_NewPinFromDict(Sachi_Interpreter* InInterpreter, Sachi_Object* InDict);
 
 /**
  * Delete a pin.
@@ -55,28 +58,33 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewPin(Sachi_Interpreter* InInterpreter);
 SACHI_PUBLIC(void) Sachi_DeletePin(Sachi_Object* InObject);
 
 /**
- * Get the definition of this pin.
+ * Set the metadata of this pin.
  *
  * :param InObject: instance
- * :return: definition
+ * :param InMetadata: metadata
+ * :return: error code
  */
-SACHI_PUBLIC(Sachi_PinDef*) SachiPin_GetDefition(Sachi_Object* InObject);
+SACHI_PUBLIC(int) SachiPin_SetMetadata(Sachi_Object* InObject, Sachi_PinMetadata* InMetadata);
 
 /**
- * Set the definition of this pin.
+ * Set the metadata of this pin.
  *
  * :param InObject: instance
- * :param InDefinition: new definition
+ * :param InDict: dict containing metadata
+ * :return: error code
  */
-SACHI_PUBLIC(void) SachiPin_SetDefition(Sachi_Object* InObject, Sachi_PinDef* InDefinition);
+SACHI_PUBLIC(int) SachiPin_SetMetadataFromDict(Sachi_Object* InObject, Sachi_Object* InDict);
 
-/**
- * Get the definition of this pin.
- *
- * :param InObject: instance
- * :return: definition
- */
 SACHI_PUBLIC(const char*) SachiPin_GetName(Sachi_Object* InObject);
+SACHI_PUBLIC(int) SachiPin_SetName(Sachi_Object* InObject, Sachi_Object* InName);
+SACHI_PUBLIC(int) SachiPin_SetNameFromBuffer(Sachi_Object* InObject, const char* InBuffer);
+SACHI_PUBLIC(int) SachiPin_SetNameFromBufferAndLength(Sachi_Object* InObject, const char* InBuffer, sachi_size_t InLength);
+SACHI_PUBLIC(Sachi_PinSide) SachiPin_GetSide(Sachi_Object* InObject);
+SACHI_PUBLIC(int) SachiPin_SetSide(Sachi_Object* InObject, Sachi_Object* InSide);
+SACHI_PUBLIC(void) SachiPin_SetSideFromValue(Sachi_Object* InObject, Sachi_PinSide InSide);
+SACHI_PUBLIC(Sachi_PinMode) SachiPin_GetMode(Sachi_Object* InObject);
+SACHI_PUBLIC(int) SachiPin_SetMode(Sachi_Object* InObject, Sachi_Object* InMode);
+SACHI_PUBLIC(void) SachiPin_SetModeFromValue(Sachi_Object* InObject, Sachi_PinMode InMode);
 
 #ifdef __cplusplus
 }

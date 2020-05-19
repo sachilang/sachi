@@ -8,22 +8,24 @@
 #include "sachi/object/dict.h"
 #include "sachi/object/list.h"
 #include "sachi/object/interpreter.h"
+#include "sachi/pinmetadata.h"
+#include "sachi/nodemetadata.h"
 
 #include "cJSON/cJSON.h"
 
-static Sachi_PinDef _LoadsDefs[] = {
-	{NULL, "execin", SACHI_PINMODE_EXEC, SACHI_PINSIDE_IN, NULL, NULL},
-	{NULL, "execout", SACHI_PINMODE_EXEC, SACHI_PINSIDE_OUT, NULL, NULL},
-	{NULL, "s", SACHI_PINMODE_VALUE, SACHI_PINSIDE_IN, NULL, NULL},
-	{NULL, "o", SACHI_PINMODE_VALUE, SACHI_PINSIDE_OUT, NULL, NULL},
+static Sachi_PinMetadata _LoadsPins[] = {
+	{"execin", SACHI_PINMODE_EXEC, SACHI_PINSIDE_IN},
+	{"execout", SACHI_PINMODE_EXEC, SACHI_PINSIDE_OUT},
+	{"s", SACHI_PINMODE_VALUE, SACHI_PINSIDE_IN},
+	{"o", SACHI_PINMODE_VALUE, SACHI_PINSIDE_OUT},
 	NULL
 };
 
-static Sachi_PinDef _LoadDefs[] = {
-	{NULL, "execin", SACHI_PINMODE_EXEC, SACHI_PINSIDE_IN, NULL, NULL},
-	{NULL, "execout", SACHI_PINMODE_EXEC, SACHI_PINSIDE_OUT, NULL, NULL},
-	{NULL, "s", SACHI_PINMODE_VALUE, SACHI_PINSIDE_IN, NULL, NULL},
-	{NULL, "o", SACHI_PINMODE_VALUE, SACHI_PINSIDE_OUT, NULL, NULL},
+static Sachi_PinMetadata _LoadPins[] = {
+	{"execin", SACHI_PINMODE_EXEC, SACHI_PINSIDE_IN},
+	{"execout", SACHI_PINMODE_EXEC, SACHI_PINSIDE_OUT},
+	{"s", SACHI_PINMODE_VALUE, SACHI_PINSIDE_IN},
+	{"o", SACHI_PINMODE_VALUE, SACHI_PINSIDE_OUT},
 	NULL
 };
 
@@ -36,7 +38,7 @@ static int _Convert(Sachi_Interpreter* InInterpreter, cJSON* InObject, Sachi_Obj
 	}
 	else if (cJSON_IsArray(InObject))
 	{
-		Object = Sachi_NewList(InInterpreter, cJSON_GetArraySize(InObject));
+		Object = Sachi_NewListWithCapacity(InInterpreter, cJSON_GetArraySize(InObject));
 	}
 	else if (cJSON_IsString(InObject))
 	{
@@ -165,34 +167,22 @@ static int _SachiJSON_Load(Sachi_Interpreter* InInterpreter, Sachi_Object* InObj
 	return SACHI_OK;
 }
 
-static Sachi_NodeDef _MethodsDefs[] = {
-	{"loads", _SachiJSON_Loads, _LoadsDefs},
-	{"load", _SachiJSON_Load, _LoadDefs},
+static Sachi_NodeMetadata _Methods[] = {
+	{"loads", _SachiJSON_Loads, _LoadsPins},
+	{"load", _SachiJSON_Load, _LoadPins},
 	NULL
 };
 
-static Sachi_NodeDef _NodeDef = {
+static Sachi_NodeMetadata _Node = {
 	"package",
 	NULL,
 	NULL,
-	_MethodsDefs
+	_Methods
 };
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewJSON(Sachi_Interpreter* InInterpreter)
 {
-	Sachi_Object* Node = Sachi_NewNode(InInterpreter);
-	if (!Node)
-	{
-		return NULL;
-	}
-
-	if (SachiNode_SetDefition(Node, &_NodeDef) != SACHI_OK)
-	{
-		Sachi_DeleteNode(Node);
-		return NULL;
-	}
-
-	return Node;
+	return Sachi_NewNodeFromMetadata(InInterpreter, &_Node);
 }
 
 SACHI_PUBLIC(void) Sachi_DeleteJSON(Sachi_Object* InObject)

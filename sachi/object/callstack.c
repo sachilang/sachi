@@ -3,6 +3,7 @@
 #include "sachi/sachi.h"
 #include "sachi/object/node.h"
 #include "sachi/object/bool.h"
+#include "sachi/nodemetadata.h"
 
 typedef struct _Sachi_CallStack
 {
@@ -34,7 +35,7 @@ static LONG _SachiCallStack_Hash(Sachi_Object* InObject)
 	return result;
 }
 
-static Sachi_NodeDef _Sachi_CallStackNodes[] = {
+static Sachi_NodeMetadata _Sachi_CallStackNodes[] = {
 	{"init", &_SachiCallStack_Init}
 };
 

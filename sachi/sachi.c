@@ -128,3 +128,19 @@ SACHI_PUBLIC(const char*) Sachi_Join(const char* InLeft, const char* InRight)
 	Buffer[LeftSize + RightSize] = '\0';
 	return Buffer;
 }
+
+SACHI_PUBLIC(int) Sachi_CopyBuffer(const char* InBuffer, const char** OutBuffer)
+{
+	sachi_size_t Size = sachi_strlen(InBuffer);
+	char* Buffer = (char*)sachi_malloc(sizeof(char) * (Size + 1));
+	if (!Buffer)
+	{
+		return SACHI_ERROR;
+	}
+
+	sachi_memcpy(Buffer, InBuffer, Size);
+	Buffer[Size] = '\0';
+	*OutBuffer = Buffer;
+
+	return SACHI_OK;
+}

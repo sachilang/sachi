@@ -3,12 +3,10 @@
   "nodes":[
     {
       "name":"min",
-      "inputs":[
-        {"mode":"value", "name":"a"},
-        {"mode":"value", "name":"b"}
-      ],
-      "outputs":[
-        {"mode":"value", "name":"out"}
+      "pins":[
+        {"mode":"value", "side": "in", "name":"a"},
+        {"mode":"value", "side": "in", "name":"b"},
+        {"mode":"value", "side": "out", "name":"out"}
       ],
       "flow":[
         {"node":"lte", "name":"lte0"},

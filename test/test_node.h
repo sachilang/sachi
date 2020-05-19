@@ -18,6 +18,8 @@ extern "C" {
 #include "sachi/object/dict.h"
 #include "sachi/object/int.h"
 #include "sachi/object/string.h"
+#include "sachi/pinmetadata.h"
+#include "sachi/nodemetadata.h"
 
 #ifdef __cplusplus
 }
@@ -27,27 +29,27 @@ extern "C" {
 #define _SACHI_HELLOWORLD_EXECWORLD 1
 #define _SACHI_HELLOWORLD_EXECOUT 2
 
-static Sachi_PinDef HelloWorldPinsDefs[] = {
-	{NULL, "exechello", SACHI_PINMODE_EXEC, SACHI_PINSIDE_IN, NULL, NULL},
-	{NULL, "execworld", SACHI_PINMODE_EXEC, SACHI_PINSIDE_IN, NULL, NULL},
-	{NULL, "execout", SACHI_PINMODE_EXEC, SACHI_PINSIDE_OUT, NULL, NULL},
+static Sachi_PinMetadata _HelloWorldPins[] = {
+	{"exechello", SACHI_PINMODE_EXEC, SACHI_PINSIDE_IN},
+	{"execworld", SACHI_PINMODE_EXEC, SACHI_PINSIDE_IN},
+	{"execout", SACHI_PINMODE_EXEC, SACHI_PINSIDE_OUT},
 	NULL
 };
 
 static int _HelloWorld(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults)
 {
-	if (sachi_strcmp(SachiPin_GetName(InInputExecPin), HelloWorldPinsDefs[_SACHI_HELLOWORLD_EXECHELLO].Name) == 0)
+	if (sachi_strcmp(SachiPin_GetName(InInputExecPin), _HelloWorldPins[_SACHI_HELLOWORLD_EXECHELLO].Name) == 0)
 	{
 		std::cout << "Hello" << std::endl;
 	}
-	else if (sachi_strcmp(SachiPin_GetName(InInputExecPin), HelloWorldPinsDefs[_SACHI_HELLOWORLD_EXECWORLD].Name) == 0)
+	else if (sachi_strcmp(SachiPin_GetName(InInputExecPin), _HelloWorldPins[_SACHI_HELLOWORLD_EXECWORLD].Name) == 0)
 	{
 		std::cout << " World !" << std::endl;
 	}
 
 	if (OutOutputExecPin)
 	{
-		*OutOutputExecPin = SachiNode_GetPin(InObject, HelloWorldPinsDefs[_SACHI_HELLOWORLD_EXECOUT].Name);
+		*OutOutputExecPin = SachiNode_GetPin(InObject, _HelloWorldPins[_SACHI_HELLOWORLD_EXECOUT].Name);
 	}
 
 	return SACHI_OK;
@@ -57,10 +59,10 @@ static int _HelloWorld(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject,
 #define _SACHI_MIN_B 1
 #define _SACHI_MIN_OUT 2
 
-static Sachi_PinDef MinPinsDefs[] = {
-	{NULL, "a", SACHI_PINMODE_VALUE, SACHI_PINSIDE_IN, NULL, NULL},
-	{NULL, "b", SACHI_PINMODE_VALUE, SACHI_PINSIDE_IN, NULL, NULL},
-	{NULL, "out", SACHI_PINMODE_VALUE, SACHI_PINSIDE_OUT, NULL, NULL},
+static Sachi_PinMetadata _MinPins[] = {
+	{"a", SACHI_PINMODE_VALUE, SACHI_PINSIDE_IN},
+	{"b", SACHI_PINMODE_VALUE, SACHI_PINSIDE_IN},
+	{"out", SACHI_PINMODE_VALUE, SACHI_PINSIDE_OUT},
 	NULL
 };
 
@@ -77,46 +79,43 @@ static int _Min(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_
 	return SACHI_OK;
 }
 
-static Sachi_NodeDef PackageChildrenDefs[] = {
-	{"helloworld", _HelloWorld, HelloWorldPinsDefs},
-	{"min", _Min, MinPinsDefs},
+static Sachi_NodeMetadata _Methods[] = {
+	{"helloworld", _HelloWorld, _HelloWorldPins},
+	{"min", _Min, _MinPins},
 	NULL
 };
 
-static Sachi_NodeDef PackageDef = {
+static Sachi_NodeMetadata _Node = {
 	"package",
 	NULL,
 	NULL,
-	PackageChildrenDefs
+	_Methods
 };
 
 void test_node(Sachi_Interpreter* InInterpreter)
 {
 	// Create the Package node
-	Sachi_Object* Node = Sachi_NodeType.New(InInterpreter);
+	Sachi_Object* Node = Sachi_NewNodeFromMetadata(InInterpreter, &_Node);
 	Assert(Node != NULL);
 	Assert(Node->Type != NULL);
 	Assert(Node->Interpreter != NULL);
 
-	Assert(SachiNode_SetDefition(Node, &PackageDef) == SACHI_OK);
-
-	Sachi_Object* HelloWorldNode = SachiNode_GetChild(Node, "helloworld");
+	Sachi_Object* HelloWorldNode = SachiNode_GetNode(Node, "helloworld");
 	Assert(HelloWorldNode != NULL);
+	Assert(SachiList_Size(SachiNode_GetPins(HelloWorldNode)) == 3);
 
-	Sachi_Object* MinNode = SachiNode_GetChild(Node, "min");
+	Sachi_Object* MinNode = SachiNode_GetNode(Node, "min");
 	Assert(MinNode != NULL);
+	Assert(SachiList_Size(SachiNode_GetPins(MinNode)) == 3);
 
 	// Test HelloWorld
-	Sachi_NodeDef* OutDefinition = SachiNode_GetDefition(HelloWorldNode);
-	Assert(OutDefinition != NULL);
-
 	Sachi_Object* Pins = SachiNode_GetPins(HelloWorldNode);
 	Assert(Pins != NULL);
 
 	Sachi_Object* ExecPin = NULL;
 	Assert(SachiList_GetItem(Pins, _SACHI_HELLOWORLD_EXECHELLO, &ExecPin) == SACHI_OK);
 
-	OutDefinition->Func(
+	SachiNode_GetFunc(HelloWorldNode)(
 		InInterpreter,
 		HelloWorldNode,
 		ExecPin,
@@ -127,7 +126,7 @@ void test_node(Sachi_Interpreter* InInterpreter)
 
 	Assert(SachiList_GetItem(Pins, _SACHI_HELLOWORLD_EXECWORLD, &ExecPin) == SACHI_OK);
 
-	OutDefinition->Func(
+	SachiNode_GetFunc(HelloWorldNode)(
 		InInterpreter,
 		HelloWorldNode,
 		ExecPin,
@@ -137,9 +136,6 @@ void test_node(Sachi_Interpreter* InInterpreter)
 	);
 
 	// Test Min
-	OutDefinition = SachiNode_GetDefition(MinNode);
-	Assert(OutDefinition != NULL);
-
 	Pins = SachiNode_GetPins(MinNode);
 	Assert(Pins != NULL);
 
@@ -154,7 +150,7 @@ void test_node(Sachi_Interpreter* InInterpreter)
 	Sachi_Object* KwResults = Sachi_NewDict(InInterpreter);
 	Assert(KwResults != NULL);
 
-	OutDefinition->Func(
+	SachiNode_GetFunc(MinNode)(
 		InInterpreter,
 		MinNode,
 		NULL,

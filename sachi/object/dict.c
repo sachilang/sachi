@@ -3,6 +3,7 @@
 #include "sachi/sachi.h"
 #include "sachi/object/string.h"
 #include "sachi/object/node.h"
+#include "sachi/nodemetadata.h"
 
 typedef struct _Sachi_DictEntry _Sachi_DictEntry;
 typedef struct _Sachi_DictEntry
@@ -90,7 +91,7 @@ const char* _SachiDict_ToString(Sachi_Object* InObject)
 	return SachiDict_ToString(InObject);
 }
 
-static Sachi_NodeDef _Sachi_DictNodes[] = {
+static Sachi_NodeMetadata _Sachi_DictNodes[] = {
 	{"init", &_SachiDict_Init}
 };
 

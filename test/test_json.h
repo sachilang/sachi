@@ -23,7 +23,7 @@ static const char* JSON_STRING = "{\"key\": \"value\", \"list\": [\"value\", \"v
 
 void test_json_loads(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
 {
-	Sachi_Object* Callback = SachiNode_GetChild(InNode, "loads");
+	Sachi_Object* Callback = SachiNode_GetNode(InNode, "loads");
 	Assert(Callback != NULL);
 
 	Sachi_Object* KwArgs = Sachi_NewDict(InInterpreter);
@@ -46,7 +46,7 @@ void test_json_loads(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
 
 void test_json_load(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
 {
-	Sachi_Object* Callback = SachiNode_GetChild(InNode, "load");
+	Sachi_Object* Callback = SachiNode_GetNode(InNode, "load");
 	Assert(Callback != NULL);
 
 	Sachi_Object* KwArgs = Sachi_NewDict(InInterpreter);
@@ -61,6 +61,10 @@ void test_json_load(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
 	SachiDict_GetItemFromBuffer(KwResults, "o", &Result);
 	std::cout << Result->Type->ToString(Result) << std::endl;
 
+	Sachi_Object* Node = Sachi_NewNodeFromDict(InInterpreter, Result);
+	Assert(sachi_strcmp(SachiNode_GetName(Node), "math") == 0);
+
+	Sachi_DecRef(Node);
 	Sachi_DecRef(KwArgs);
 	Sachi_DecRef(KwResults);
 }

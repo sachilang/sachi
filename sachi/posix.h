@@ -44,11 +44,11 @@ extern "C"
 #endif
 
 #ifndef TRUE
-#define TRUE 0
+#define TRUE 1
 #endif
 
 #ifndef FALSE
-#define FALSE 1
+#define FALSE 0
 #endif
 
 #ifdef __cplusplus
