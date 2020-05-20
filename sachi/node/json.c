@@ -52,11 +52,11 @@ static int _Convert(Sachi_Interpreter* InInterpreter, cJSON* InObject, Sachi_Obj
 	{
 		if (cJSON_IsTrue(InObject))
 		{
-			Object = Sachi_True(InInterpreter);
+			Object = Sachi_True((Sachi_Object*)InInterpreter);
 		}
 		else
 		{
-			Object = Sachi_False(InInterpreter);
+			Object = Sachi_False((Sachi_Object*)InInterpreter);
 		}
 	}
 
@@ -112,7 +112,7 @@ static int _Convert(Sachi_Interpreter* InInterpreter, cJSON* InObject, Sachi_Obj
 	return SACHI_OK;
 }
 
-static int _SachiJSON_Loads(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults)
+static int _SachiJSON_Loads(Sachi_Object* InNodeInstance, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* InKwResults)
 {
 	Sachi_Object* Item;
 	if (SachiDict_GetItemFromBuffer(InKwArgs, "s", &Item) != SACHI_OK)
@@ -121,12 +121,12 @@ static int _SachiJSON_Loads(Sachi_Interpreter* InInterpreter, Sachi_Object* InOb
 	}
 
 	Sachi_Object* Result = NULL;
-	if (SachiJSON_Loads(InInterpreter, Item, &Result) != SACHI_OK)
+	if (SachiJSON_Loads(InNodeInstance->Interpreter, Item, &Result) != SACHI_OK)
 	{
 		return SACHI_ERROR;
 	}
 
-	if (SachiDict_SetItemFromBuffer(OutKwResults, "o", Result) != SACHI_OK)
+	if (SachiDict_SetItemFromBuffer(InKwResults, "o", Result) != SACHI_OK)
 	{
 		Sachi_DecRef(Result);
 		return SACHI_ERROR;
@@ -136,7 +136,7 @@ static int _SachiJSON_Loads(Sachi_Interpreter* InInterpreter, Sachi_Object* InOb
 	return SACHI_OK;
 }
 
-static int _SachiJSON_Load(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults)
+static int _SachiJSON_Load(Sachi_Object* InNodeInstance, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* InKwResults)
 {
 	Sachi_Object* Item;
 	if (SachiDict_GetItemFromBuffer(InKwArgs, "s", &Item) != SACHI_OK)
@@ -152,12 +152,12 @@ static int _SachiJSON_Load(Sachi_Interpreter* InInterpreter, Sachi_Object* InObj
 	}
 
 	Sachi_Object* Result = NULL;
-	if (SachiJSON_LoadsFromBufferAndLength(InInterpreter, Buffer, Size, &Result) != SACHI_OK)
+	if (SachiJSON_LoadsFromBufferAndLength(InNodeInstance->Interpreter, Buffer, Size, &Result) != SACHI_OK)
 	{
 		return SACHI_ERROR;
 	}
 
-	if (SachiDict_SetItemFromBuffer(OutKwResults, "o", Result) != SACHI_OK)
+	if (SachiDict_SetItemFromBuffer(InKwResults, "o", Result) != SACHI_OK)
 	{
 		Sachi_DecRef(Result);
 		return SACHI_ERROR;
@@ -173,34 +173,24 @@ static Sachi_NodeMetadata _Methods[] = {
 	NULL
 };
 
-static Sachi_NodeMetadata _Node = {
+Sachi_NodeMetadata Sachi_JSONNodeMetadata = {
 	"package",
-	NULL,
-	NULL,
+	NULL, // func
+	NULL, // pins
 	_Methods
 };
 
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewJSON(Sachi_Interpreter* InInterpreter)
-{
-	return Sachi_NewNodeFromMetadata(InInterpreter, &_Node);
-}
-
-SACHI_PUBLIC(void) Sachi_DeleteJSON(Sachi_Object* InObject)
-{
-	Sachi_DeleteObject(InObject);
-}
-
-SACHI_PUBLIC(int) SachiJSON_Loads(Sachi_Object* InInterpreter, Sachi_Object* InObject, Sachi_Object** OutObject)
+SACHI_PUBLIC(int) SachiJSON_Loads(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object** OutObject)
 {
 	return SachiJSON_LoadsFromBufferAndLength(InInterpreter, SachiString_Data(InObject), SachiString_Size(InObject), OutObject);
 }
 
-SACHI_PUBLIC(int) SachiJSON_LoadsFromBuffer(Sachi_Object* InInterpreter, const char* InBuffer, Sachi_Object** OutObject)
+SACHI_PUBLIC(int) SachiJSON_LoadsFromBuffer(Sachi_Interpreter* InInterpreter, const char* InBuffer, Sachi_Object** OutObject)
 {
 	return SachiJSON_LoadsFromBufferAndLength(InInterpreter, InBuffer, sachi_strlen(InBuffer), OutObject);
 }
 
-SACHI_PUBLIC(int) SachiJSON_LoadsFromBufferAndLength(Sachi_Object* InInterpreter, const char* InBuffer, sachi_size_t InLength, Sachi_Object** OutObject)
+SACHI_PUBLIC(int) SachiJSON_LoadsFromBufferAndLength(Sachi_Interpreter* InInterpreter, const char* InBuffer, sachi_size_t InLength, Sachi_Object** OutObject)
 {
 	cJSON* Root = cJSON_ParseWithLength(InBuffer, InLength);
 	if (!Root)

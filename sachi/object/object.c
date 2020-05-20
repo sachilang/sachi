@@ -51,32 +51,25 @@ SACHI_PUBLIC(void) Sachi_IncRef(Sachi_Object* InObject)
 	InObject->RefCounter.Counter++;
 }
 
-SACHI_PUBLIC(int) Sachi_DecRef(Sachi_Object* InObject)
+SACHI_PUBLIC(void) Sachi_DecRef(Sachi_Object* InObject)
 {
 	if (!InObject || InObject->RefCounter.Counter == 0)
 	{
-		return SACHI_OK;
+		return;
 	}
 
 	InObject->RefCounter.Counter--;
 	if (InObject->RefCounter.Counter == 0)
 	{
-		if (!InObject->Type)
+		if (InObject->Type && InObject->Type->Delete)
 		{
-			SachiInterpreter_SetErrorMessage(InObject->Interpreter, "object has no type");
-			return SACHI_ERROR;
+			InObject->Type->Delete(InObject);
 		}
-
-		if (!InObject->Type->Delete)
+		else
 		{
-			SachiInterpreter_SetErrorMessage(InObject->Interpreter, "object has no destructor");
-			return SACHI_ERROR;
+			sachi_free(InObject);
 		}
-
-		InObject->Type->Delete(InObject);
 	}
-
-	return SACHI_OK;
 }
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewObject(Sachi_Interpreter* InInterpreter, Sachi_ObjectType* InType)

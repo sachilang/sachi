@@ -12,24 +12,16 @@ extern "C"
 
 extern Sachi_ObjectType Sachi_CallStackType;
 
+typedef struct _Sachi_NodeMetadata Sachi_NodeMetadata;
 typedef struct _Sachi_CallStack Sachi_CallStack;
 
 #define Sachi_CheckCallStack(o) (o->Type == &Sachi_CallStackType)
 	
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewCallStack(Sachi_Interpreter* InInterpreter);
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewCallStackFromBuffer(Sachi_Interpreter* InInterpreter, const char* InBuffer);
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewCallStackFromBufferAndLength(Sachi_Interpreter* InInterpreter, const char* InBuffer, sachi_size_t InLength);
+SACHI_PUBLIC(Sachi_Object*) Sachi_NewCallStack(Sachi_Interpreter* InInterpreter, Sachi_Object* InParent);
 SACHI_PUBLIC(void) Sachi_DeleteCallStack(Sachi_Object* InObject);
-SACHI_PUBLIC(Sachi_Object*) SachiCallStack_Empty(Sachi_Object* InObject);
-SACHI_PUBLIC(sachi_size_t) SachiCallStack_Size(Sachi_Object* InObject);
-
-/**
- * Get the underlying allocated memory array.
- *
- * :param InObject: list
- * :return: underlying memory array
- */
-SACHI_PUBLIC(const char*) SachiCallStack_Data(Sachi_Object* InObject);
+SACHI_PUBLIC(int) SachiCallStack_AddNode(Sachi_Object* InObject, Sachi_Object* InNode);
+SACHI_PUBLIC(int) SachiCallStack_AddNodeFromMetadata(Sachi_Object* InObject, Sachi_NodeMetadata* InMetadata);
+SACHI_PUBLIC(int) SachiCallStack_AddNodeFromDict(Sachi_Object* InObject, Sachi_Object* InDict);
 
 #ifdef __cplusplus
 }

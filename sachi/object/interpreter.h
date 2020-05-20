@@ -12,6 +12,7 @@ extern "C"
 
 extern Sachi_ObjectType Sachi_InterpreterType;
 
+typedef struct _Sachi_NodeMetadata Sachi_NodeMetadata;
 typedef struct _Sachi_Interpreter Sachi_Interpreter;
 
 #define Sachi_CheckInterpreter(o) (o->Type == &Sachi_InterpreterType)
@@ -66,6 +67,19 @@ SACHI_PUBLIC(void) SachiInterpreter_SetErrorMessageWithLength(Sachi_Object* InOb
  * :param InInterpreter: interpreter instance
  */
 SACHI_PUBLIC(void) SachiInterpreter_MemoryAllocationError(Sachi_Object* InObject);
+
+/**
+ * Add a node to the interpreter.
+ *
+ * This makes the node accessible from code.
+ *
+ * :param InObject: interpreter instance
+ * :param InNode: node to add
+ * :return: error code
+ */
+SACHI_PUBLIC(int) SachiInterpreter_AddNode(Sachi_Object* InObject, Sachi_Object* InNode);
+SACHI_PUBLIC(int) SachiInterpreter_AddNodeFromMetadata(Sachi_Object* InObject, Sachi_NodeMetadata* InMetadata);
+SACHI_PUBLIC(int) SachiInterpreter_AddNodeFromDict(Sachi_Object* InObject, Sachi_Object* InDict);
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_True(Sachi_Object* InInterpreter);
 SACHI_PUBLIC(Sachi_Object*) Sachi_False(Sachi_Object* InInterpreter);

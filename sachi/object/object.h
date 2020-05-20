@@ -68,12 +68,12 @@ SACHI_PUBLIC(void) Sachi_IncRef(Sachi_Object* InObject);
  *
  * This deallocate the object when the counter reachs zero.
  *
- * This may fail if object's type or destructor are not set correctly.
+ * If the object has no type or no destructor, then default
+ * free function is used.
  *
  * :param InObject: object instance
- * :return: error code
  */
-SACHI_PUBLIC(int) Sachi_DecRef(Sachi_Object* InObject);
+SACHI_PUBLIC(void) Sachi_DecRef(Sachi_Object* InObject);
 
 /**
  * Base structure of all allocated objects.

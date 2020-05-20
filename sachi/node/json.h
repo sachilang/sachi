@@ -9,9 +9,9 @@ extern "C"
 #include "sachi/config.h"
 #include "sachi/posix.h"
 #include "sachi/object/object.h"
-	
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewJSON(Sachi_Interpreter* InInterpreter);
-SACHI_PUBLIC(void) Sachi_DeleteJSON(Sachi_Object* InObject);
+#include "sachi/nodemetadata.h"
+
+extern Sachi_NodeMetadata Sachi_JSONNodeMetadata;
 
 /**
  * Parse a JSON string to dict.
@@ -21,7 +21,7 @@ SACHI_PUBLIC(void) Sachi_DeleteJSON(Sachi_Object* InObject);
  * :param OutObject: dict object
  * :return: error code
  */
-SACHI_PUBLIC(int) SachiJSON_Loads(Sachi_Object* InInterpreter, Sachi_Object* InObject, Sachi_Object** OutObject);
+SACHI_PUBLIC(int) SachiJSON_Loads(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object** OutObject);
 
 /**
  * Parse a JSON string to dict.
@@ -31,7 +31,7 @@ SACHI_PUBLIC(int) SachiJSON_Loads(Sachi_Object* InInterpreter, Sachi_Object* InO
  * :param OutObject: dict object
  * :return: error code
  */
-SACHI_PUBLIC(int) SachiJSON_LoadsFromBuffer(Sachi_Object* InInterpreter, const char* InBuffer, Sachi_Object** OutObject);
+SACHI_PUBLIC(int) SachiJSON_LoadsFromBuffer(Sachi_Interpreter* InInterpreter, const char* InBuffer, Sachi_Object** OutObject);
 
 /**
  * Parse a JSON string to dict.
@@ -42,7 +42,7 @@ SACHI_PUBLIC(int) SachiJSON_LoadsFromBuffer(Sachi_Object* InInterpreter, const c
  * :param OutObject: dict object
  * :return: error code
  */
-SACHI_PUBLIC(int) SachiJSON_LoadsFromBufferAndLength(Sachi_Object* InInterpreter, const char* InBuffer, sachi_size_t InLength, Sachi_Object** OutObject);
+SACHI_PUBLIC(int) SachiJSON_LoadsFromBufferAndLength(Sachi_Interpreter* InInterpreter, const char* InBuffer, sachi_size_t InLength, Sachi_Object** OutObject);
 
 #ifdef __cplusplus
 }

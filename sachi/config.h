@@ -6,6 +6,8 @@ extern "C"
 {
 #endif
 
+#pragma warning(disable:4100)
+
 #define SACHI_LOG_ENABLED 1
 
 #if !defined(__WINDOWS__) && (defined(WIN32) || defined(WIN64) || defined(_MSC_VER) || defined(_WIN32))

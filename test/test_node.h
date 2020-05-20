@@ -36,7 +36,7 @@ static Sachi_PinMetadata _HelloWorldPins[] = {
 	NULL
 };
 
-static int _HelloWorld(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults)
+static int _HelloWorld(Sachi_Object* InNodeInstance, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* InKwResults)
 {
 	if (sachi_strcmp(SachiPin_GetName(InInputExecPin), _HelloWorldPins[_SACHI_HELLOWORLD_EXECHELLO].Name) == 0)
 	{
@@ -49,7 +49,7 @@ static int _HelloWorld(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject,
 
 	if (OutOutputExecPin)
 	{
-		*OutOutputExecPin = SachiNode_GetPin(InObject, _HelloWorldPins[_SACHI_HELLOWORLD_EXECOUT].Name);
+		*OutOutputExecPin = SachiNode_GetPin(InNodeInstance, _HelloWorldPins[_SACHI_HELLOWORLD_EXECOUT].Name);
 	}
 
 	return SACHI_OK;
@@ -66,14 +66,14 @@ static Sachi_PinMetadata _MinPins[] = {
 	NULL
 };
 
-static int _Min(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults)
+static int _Min(Sachi_Object* InNodeInstance, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* InKwResults)
 {
 	Sachi_Object* A = NULL;
 	Sachi_Object* B = NULL;
 	Assert(SachiDict_GetItemFromBuffer(InKwArgs, "a", &A) == SACHI_OK);
 	Assert(SachiDict_GetItemFromBuffer(InKwArgs, "b", &B) == SACHI_OK);
 	Sachi_Object* Out = SachiInt_Data(A) <= SachiInt_Data(B) ? A : B;
-	SachiDict_SetItemFromBuffer(OutKwResults, "out", Out);
+	SachiDict_SetItemFromBuffer(InKwResults, "out", Out);
 
 	std::cout << "Min a=" << SachiInt_Data(A) << ", b=" << SachiInt_Data(B) << ", out=" << SachiInt_Data(Out) << std::endl;
 	return SACHI_OK;
@@ -114,7 +114,7 @@ void test_node(Sachi_Interpreter* InInterpreter)
 
 	Sachi_Object* ExecPin = NULL;
 	Assert(SachiList_GetItem(Pins, _SACHI_HELLOWORLD_EXECHELLO, &ExecPin) == SACHI_OK);
-
+	/*
 	SachiNode_GetFunc(HelloWorldNode)(
 		InInterpreter,
 		HelloWorldNode,
@@ -122,10 +122,11 @@ void test_node(Sachi_Interpreter* InInterpreter)
 		NULL,
 		NULL,
 		NULL
-	);
+	);*/
 
 	Assert(SachiList_GetItem(Pins, _SACHI_HELLOWORLD_EXECWORLD, &ExecPin) == SACHI_OK);
 
+	/*
 	SachiNode_GetFunc(HelloWorldNode)(
 		InInterpreter,
 		HelloWorldNode,
@@ -134,7 +135,7 @@ void test_node(Sachi_Interpreter* InInterpreter)
 		NULL,
 		NULL
 	);
-
+	*/
 	// Test Min
 	Pins = SachiNode_GetPins(MinNode);
 	Assert(Pins != NULL);
@@ -149,7 +150,7 @@ void test_node(Sachi_Interpreter* InInterpreter)
 
 	Sachi_Object* KwResults = Sachi_NewDict(InInterpreter);
 	Assert(KwResults != NULL);
-
+	/*
 	SachiNode_GetFunc(MinNode)(
 		InInterpreter,
 		MinNode,
@@ -157,7 +158,7 @@ void test_node(Sachi_Interpreter* InInterpreter)
 		KwArgs,
 		NULL,
 		KwResults
-	);
+	);*/
 
 	Sachi_DecRef(A);
 	Sachi_DecRef(B);

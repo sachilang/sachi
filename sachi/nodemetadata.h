@@ -56,15 +56,10 @@ typedef struct _Sachi_NodeMetadata Sachi_NodeMetadata;
  * Both `InInputExecPin` and `OutOutputExecPin` would be NULL.
  * `InKwArgs` would contain both `a=value` and `b=value` arguments.
  *
- * :param InInterpreter: instance of interpreter
- * :param InObject: instance of the node being called
- * :param InInputExecPin: node's input exec pin
- * :param InKwArgs: keyword based arguments
- * :param OutOutputExecPin: node's output exec pin
- * :param OutKwResults: keyword based results
+ * :param InNodeInstance: instance of node called
  * :return: error code
  */
-typedef int (*Sachi_CFunc)(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults);
+typedef int (*Sachi_CFunc)(Sachi_Object* InNodeInstance, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* InKwResults);
 
 /**
  * Metadata of a node.

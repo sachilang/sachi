@@ -54,18 +54,20 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewNode(Sachi_Interpreter* InInterpreter)
 	Value->Pins = Sachi_NewList(InInterpreter);
 	if (!Value->Pins)
 	{
-		Sachi_DeleteNode(Value);
-		return NULL;
+		goto fail;
 	}
 
 	Value->Nodes = Sachi_NewList(InInterpreter);
 	if (!Value->Nodes)
 	{
-		Sachi_DeleteNode(Value);
-		return NULL;
+		goto fail;
 	}
 
 	return (Sachi_Object*)Value;
+
+fail:
+	Sachi_DeleteNode((Sachi_Object*)Value);
+	return NULL;
 }
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewNodeFromMetadata(Sachi_Interpreter* InInterpreter, Sachi_NodeMetadata* InMetadata)
@@ -269,7 +271,7 @@ SACHI_PUBLIC(Sachi_Object*) SachiNode_GetPin(Sachi_Object* InObject, const char*
 	Sachi_Object* List = ((Sachi_Node*)InObject)->Pins;
 
 	Sachi_Object** Items = SachiList_Data(List);
-	sachi_size_t Size = SachiList_Size(Items);
+	sachi_size_t Size = SachiList_Size(List);
 	for (sachi_size_t I = 0; I < Size; ++I)
 	{
 		if (sachi_strcmp(SachiPin_GetName(*Items), InName) == 0)
@@ -355,7 +357,7 @@ SACHI_PUBLIC(Sachi_Object*) SachiNode_GetNode(Sachi_Object* InObject, const char
 	return NULL;
 }
 
-SACHI_PUBLIC(int) SachiNode_Call(Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* OutKwResults)
+SACHI_PUBLIC(int) SachiNode_Call(Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* InKwResults)
 {
 	Sachi_CFunc Func = SachiNode_GetFunc(InObject);
 	if (!Func)
@@ -364,11 +366,10 @@ SACHI_PUBLIC(int) SachiNode_Call(Sachi_Object* InObject, Sachi_Object* InInputEx
 	}
 
 	return Func(
-		InObject->Interpreter,
 		InObject,
 		InInputExecPin,
 		InKwArgs,
 		OutOutputExecPin,
-		OutKwResults
+		InKwResults
 	);
 }

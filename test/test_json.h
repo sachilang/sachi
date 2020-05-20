@@ -71,7 +71,7 @@ void test_json_load(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
 
 void test_json(Sachi_Interpreter* InInterpreter)
 {
-	Sachi_Object* Node = Sachi_NewJSON(InInterpreter);
+	Sachi_Object* Node = Sachi_NewNodeFromMetadata(InInterpreter, &Sachi_JSONNodeMetadata);
 	Assert(Node != NULL);
 
 	test_json_loads(InInterpreter, Node);

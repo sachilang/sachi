@@ -75,14 +75,14 @@ SACHI_PUBLIC(void) Sachi_DeleteList(Sachi_Object* InObject)
 	Sachi_DeleteObject(InObject);
 }
 
-SACHI_PUBLIC(int) SachiList_Empty(Sachi_Object* InObject)
+SACHI_PUBLIC(int) SachiList_Empty(const Sachi_Object* InObject)
 {
-	return ((Sachi_List*)InObject)->Size == 0;
+	return ((const Sachi_List*)InObject)->Size == 0;
 }
 
-SACHI_PUBLIC(sachi_size_t) SachiList_Size(Sachi_Object* InObject)
+SACHI_PUBLIC(sachi_size_t) SachiList_Size(const Sachi_Object* InObject)
 {
-	return ((Sachi_List*)InObject)->Size;
+	return ((const Sachi_List*)InObject)->Size;
 }
 
 SACHI_PUBLIC(int) SachiList_Reserve(Sachi_Object* InObject, sachi_size_t InSize)
@@ -106,14 +106,14 @@ SACHI_PUBLIC(int) SachiList_Reserve(Sachi_Object* InObject, sachi_size_t InSize)
 	return SACHI_OK;
 }
 
-SACHI_PUBLIC(sachi_size_t) SachiList_Capacity(Sachi_Object* InObject)
+SACHI_PUBLIC(sachi_size_t) SachiList_Capacity(const Sachi_Object* InObject)
 {
 	if (!Sachi_CheckList(InObject))
 	{
 		return SACHI_ERROR;
 	}
 
-	return ((Sachi_List*)InObject)->AllocatedSize;
+	return ((const Sachi_List*)InObject)->AllocatedSize;
 }
 
 SACHI_PUBLIC(int) SachiList_Push(Sachi_Object* InObject, Sachi_Object* InItem)
@@ -157,10 +157,7 @@ SACHI_PUBLIC(int) SachiList_Pop(Sachi_Object* InObject, Sachi_Object** OutItem)
 		*OutItem = Item;
 	}
 
-	if (Sachi_DecRef(Item) != SACHI_OK)
-	{
-		return SACHI_ERROR;
-	}
+	Sachi_DecRef(Item);
 
 	return SACHI_OK;
 }
@@ -181,9 +178,9 @@ SACHI_PUBLIC(int) SachiList_SetItem(Sachi_Object* InObject, sachi_size_t InIndex
 	return SACHI_OK;
 }
 
-SACHI_PUBLIC(int) SachiList_GetItem(Sachi_Object* InObject, sachi_size_t InIndex, Sachi_Object** OutItem)
+SACHI_PUBLIC(int) SachiList_GetItem(const Sachi_Object* InObject, sachi_size_t InIndex, Sachi_Object** OutItem)
 {
-	Sachi_List* List = (Sachi_List*)InObject;
+	const Sachi_List* List = (const Sachi_List*)InObject;
 	if (InIndex >= List->Size)
 	{
 		return SACHI_ERROR;
@@ -193,9 +190,9 @@ SACHI_PUBLIC(int) SachiList_GetItem(Sachi_Object* InObject, sachi_size_t InIndex
 	return SACHI_OK;
 }
 
-SACHI_PUBLIC(Sachi_Object*) SachiList_Front(Sachi_Object* InObject)
+SACHI_PUBLIC(Sachi_Object*) SachiList_Front(const Sachi_Object* InObject)
 {
-	Sachi_List* List = (Sachi_List*)InObject;
+	const Sachi_List* List = (const Sachi_List*)InObject;
 	if (List->Size == 0)
 	{
 		return NULL;
@@ -204,9 +201,9 @@ SACHI_PUBLIC(Sachi_Object*) SachiList_Front(Sachi_Object* InObject)
 	return List->Items[0];
 }
 
-SACHI_PUBLIC(Sachi_Object*) SachiList_Back(Sachi_Object* InObject)
+SACHI_PUBLIC(Sachi_Object*) SachiList_Back(const Sachi_Object* InObject)
 {
-	Sachi_List* List = (Sachi_List*)InObject;
+	const Sachi_List* List = (const Sachi_List*)InObject;
 	if (List->Size == 0)
 	{
 		return NULL;
@@ -228,9 +225,9 @@ SACHI_PUBLIC(void) SachiList_Clear(Sachi_Object* InObject)
 	List->Size = 0;
 }
 
-SACHI_PUBLIC(const char*) SachiList_ToString(Sachi_Object* InObject)
+SACHI_PUBLIC(const char*) SachiList_ToString(const Sachi_Object* InObject)
 {
-	Sachi_List* List = (Sachi_List*)InObject;
+	const Sachi_List* List = (const Sachi_List*)InObject;
 
 	char* Buffer = sachi_malloc(sizeof(char) * 2);
 	Buffer[0] = '[';
@@ -255,7 +252,7 @@ SACHI_PUBLIC(const char*) SachiList_ToString(Sachi_Object* InObject)
 	return Result;
 }
 
-SACHI_PUBLIC(Sachi_Object**) SachiList_Data(Sachi_Object* InObject)
+SACHI_PUBLIC(Sachi_Object**) SachiList_Data(const Sachi_Object* InObject)
 {
-	return ((Sachi_List*)InObject)->Items;
+	return ((const Sachi_List*)InObject)->Items;
 }

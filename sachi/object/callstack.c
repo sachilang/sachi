@@ -3,13 +3,13 @@
 #include "sachi/sachi.h"
 #include "sachi/object/node.h"
 #include "sachi/object/bool.h"
-#include "sachi/nodemetadata.h"
+#include "sachi/object/dict.h"
 
 typedef struct _Sachi_CallStack
 {
 	SACHI_OBJECT_HEADER
-	const char* Buffer;
-	sachi_size_t Size;
+	Sachi_Object* Parent; // parent callstack
+	Sachi_Object* Nodes; // known nodes accessibles from code
 } Sachi_CallStack;
 
 static void _Sachi_DeleteCallStack(Sachi_Object* InObject)
@@ -17,107 +17,80 @@ static void _Sachi_DeleteCallStack(Sachi_Object* InObject)
 	Sachi_DeleteCallStack(InObject);
 }
 
-static int _SachiCallStack_Init(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object** OutKwResults)
-{
-	return SACHI_OK;
-}
-
-static LONG _SachiCallStack_Hash(Sachi_Object* InObject)
-{
-	LONG result = 0x55555555;
-
-	const char* Buffer = SachiCallStack_Data(InObject);
-	while (*Buffer != '\0') {
-		result ^= *Buffer++;
-		result <<= 5;
-	}
-
-	return result;
-}
-
-static Sachi_NodeMetadata _Sachi_CallStackNodes[] = {
-	{"init", &_SachiCallStack_Init}
-};
-
 Sachi_ObjectType Sachi_CallStackType = {
-	"CallStack",
+	"callstack",
+	sizeof(Sachi_CallStack),
 	NULL, // base
 	NULL, // new
 	_Sachi_DeleteCallStack,
-	_Sachi_CallStackNodes,
-	_SachiCallStack_Hash, // hash
+	NULL, // nodes
+	NULL, // hash
+	NULL, // to string
 };
 
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewCallStack(Sachi_Interpreter* InInterpreter)
+SACHI_PUBLIC(Sachi_Object*) Sachi_NewCallStack(Sachi_Interpreter* InInterpreter, Sachi_Object* InParent)
 {
-	Sachi_CallStack* Value = (Sachi_CallStack*)sachi_malloc(sizeof(Sachi_CallStack));
+	Sachi_CallStack* Value = (Sachi_CallStack*)Sachi_NewObject(InInterpreter, &Sachi_CallStackType);
 	if (!Value)
 	{
-		SachiError_SetMemoryAllocation();
 		return NULL;
 	}
 
-	Sachi_NewObject(InInterpreter, Value, &Sachi_CallStackType);
-	Value->Buffer = NULL;
-	Value->Size = 0;
+	Value->Parent = InParent;
+	Sachi_IncRef(InParent);
+	Value->Nodes = NULL;
+
+	Value->Nodes = Sachi_NewDict(InInterpreter);
+	if (!Value->Nodes)
+	{
+		goto fail;
+	}
 
 	return (Sachi_Object*)Value;
-}
 
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewCallStackFromBuffer(Sachi_Interpreter* InInterpreter, const char* InBuffer)
-{
-	return Sachi_NewCallStackFromBufferAndLength(InInterpreter, InBuffer, sachi_strlen(InBuffer));
-}
-
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewCallStackFromBufferAndLength(Sachi_Interpreter* InInterpreter, const char* InBuffer, sachi_size_t InLength)
-{
-	Sachi_CallStack* CallStack = (Sachi_CallStack*)Sachi_NewCallStack(InInterpreter);
-	if (!CallStack)
-	{
-		return NULL;
-	}
-
-	char* Buffer = (char*)sachi_malloc(sizeof(char) * (InLength + 1));
-	if (!Buffer)
-	{
-		SachiInterpreter_MemoryAllocationError(InInterpreter);
-		Sachi_DeleteCallStack(CallStack);
-		return NULL;
-	}
-
-	CallStack->Buffer = Buffer;
-	CallStack->Size = InLength;
-	sachi_memcpy(Buffer, InBuffer, InLength);
-	Buffer[InLength] = '\0';
-
-	return (Sachi_Object*)CallStack;
+fail:
+	Sachi_DeleteCallStack(Value);
+	return NULL;
 }
 
 SACHI_PUBLIC(void) Sachi_DeleteCallStack(Sachi_Object* InObject)
 {
 	Sachi_CallStack* CallStack = (Sachi_CallStack*)InObject;
-	sachi_free(CallStack->Buffer);
-	CallStack->Buffer = NULL;
-	CallStack->Size = 0;
+	Sachi_DecRef(CallStack->Parent);
+	CallStack->Parent = NULL;
+	Sachi_DecRef(CallStack->Nodes);
+	CallStack->Nodes = NULL;
 	Sachi_DeleteObject(InObject);
 }
 
-SACHI_PUBLIC(Sachi_Object*) SachiCallStack_Empty(Sachi_Object* InObject)
+SACHI_PUBLIC(int) SachiCallStack_AddNode(Sachi_Object* InObject, Sachi_Object* InNode)
 {
-	if (((Sachi_CallStack*)InObject)->Size == 0)
+	Sachi_CallStack* CallStack = (Sachi_CallStack*)InObject;
+	return SachiDict_SetItemFromBuffer(CallStack->Nodes, SachiNode_GetName(InNode), InNode);
+}
+
+SACHI_PUBLIC(int) SachiCallStack_AddNodeFromMetadata(Sachi_Object* InObject, Sachi_NodeMetadata* InMetadata)
+{
+	Sachi_Object* Node = Sachi_NewNodeFromMetadata(InObject->Interpreter, InMetadata);
+	if (!Node)
 	{
-		return Sachi_True;
+		return SACHI_ERROR;
 	}
 
-	return Sachi_False;
+	int Result = SachiCallStack_AddNode(InObject, Node);
+	Sachi_DecRef(Node);
+	return Result;
 }
 
-SACHI_PUBLIC(sachi_size_t) SachiCallStack_Size(Sachi_Object* InObject)
+SACHI_PUBLIC(int) SachiCallStack_AddNodeFromDict(Sachi_Object* InObject, Sachi_Object* InDict)
 {
-	return ((Sachi_CallStack*)InObject)->Size;
-}
+	Sachi_Object* Node = Sachi_NewNodeFromDict(InObject->Interpreter, InDict);
+	if (!Node)
+	{
+		return SACHI_ERROR;
+	}
 
-SACHI_PUBLIC(const char*) SachiCallStack_Data(Sachi_Object* InObject)
-{
-	return ((Sachi_CallStack*)InObject)->Buffer;
+	int Result = SachiCallStack_AddNode(InObject, Node);
+	Sachi_DecRef(Node);
+	return Result;
 }

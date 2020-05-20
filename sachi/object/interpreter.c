@@ -3,6 +3,7 @@
 #include "sachi/object/node.h"
 #include "sachi/object/bool.h"
 #include "sachi/object/callstack.h"
+#include "sachi/node/builtin.h"
 
 typedef struct _Sachi_Interpreter
 {
@@ -35,6 +36,21 @@ Sachi_ObjectType Sachi_InterpreterType = {
 	NULL, // hash,
 };
 
+static int _SachiInterpreter_InitNodes(Sachi_Object* InObject)
+{
+	Sachi_NodeMetadata** Metadata = &Sachi_BuiltinNodesMetadata;
+	while (*Metadata)
+	{
+		if (SachiInterpreter_AddNodeFromMetadata(InObject, &Sachi_ImportNodeMetadata) != SACHI_OK)
+		{
+			return SACHI_ERROR;
+		}
+		Metadata++;
+	}
+
+	return SACHI_OK;
+}
+
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewInterpreter(Sachi_Interpreter* InInterpreter)
 {
 	Sachi_Interpreter* Value = (Sachi_Interpreter*)Sachi_NewObject(InInterpreter, &Sachi_InterpreterType);
@@ -48,26 +64,41 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewInterpreter(Sachi_Interpreter* InInterprete
 	Value->False = NULL;
 	Value->Error.Message = NULL;
 
-	Value->True = Sachi_NewBool(InInterpreter);
-	if (!Value->True)
+	Value->CallStack = Sachi_NewCallStack(Value, NULL);
+	if (!Value->CallStack)
 	{
-		Sachi_DeleteInterpreter(Value);
-		return NULL;
+		goto fail;
 	}
 
-	Value->False = Sachi_NewBool(InInterpreter);
+	Value->True = Sachi_NewBool(Value);
+	if (!Value->True)
+	{
+		goto fail;
+	}
+
+	Value->False = Sachi_NewBool(Value);
 	if (!Value->False)
 	{
-		Sachi_DeleteInterpreter(Value);
-		return NULL;
+		goto fail;
+	}
+
+	if (_SachiInterpreter_InitNodes(Value) != SACHI_OK)
+	{
+		goto fail;
 	}
 
 	return Value;
+
+fail:
+	Sachi_DeleteInterpreter(Value);
+	return NULL;
 }
 
 SACHI_PUBLIC(void) Sachi_DeleteInterpreter(Sachi_Object* InObject)
 {
 	Sachi_Interpreter* Interpreter = (Sachi_Interpreter*)InObject;
+	Sachi_DecRef(Interpreter->CallStack);
+	Interpreter->CallStack = NULL;
 	Sachi_DeleteBool(Interpreter->True);
 	Interpreter->True = NULL;
 	Sachi_DeleteBool(Interpreter->False);
@@ -93,6 +124,21 @@ SACHI_PUBLIC(void) SachiInterpreter_SetErrorMessageWithLength(Sachi_Object* InOb
 SACHI_PUBLIC(void) SachiInterpreter_MemoryAllocationError(Sachi_Object* InObject)
 {
 	SachiInterpreter_SetErrorMessage(InObject, "memory allocation failed");
+}
+
+SACHI_PUBLIC(int) SachiInterpreter_AddNode(Sachi_Object* InObject, Sachi_Object* InNode)
+{
+	return SachiCallStack_AddNode(((Sachi_Interpreter*)InObject)->CallStack, InNode);
+}
+
+SACHI_PUBLIC(int) SachiInterpreter_AddNodeFromMetadata(Sachi_Object* InObject, Sachi_NodeMetadata* InMetadata)
+{
+	return SachiCallStack_AddNodeFromMetadata(((Sachi_Interpreter*)InObject)->CallStack, InMetadata);
+}
+
+SACHI_PUBLIC(int) SachiInterpreter_AddNodeFromDict(Sachi_Object* InObject, Sachi_Object* InDict)
+{
+	return SachiCallStack_AddNodeFromDict(((Sachi_Interpreter*)InObject)->CallStack, InDict);
 }
 
 SACHI_PUBLIC(Sachi_Object*) Sachi_True(Sachi_Object* InInterpreter)
