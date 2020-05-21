@@ -2,6 +2,7 @@
 #include "sachi/object/interpreter.h"
 #include "sachi/sachi.h"
 #include "sachi/object/node.h"
+#include "sachi/object/metadata/metadatanode.h"
 #include "sachi/object/bool.h"
 #include "sachi/object/dict.h"
 

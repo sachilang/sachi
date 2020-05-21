@@ -1,0 +1,17 @@
+{
+  "name": "main",
+  "flow":[
+    {"node":"new", "name":"int0", "link": {
+		"type": "int",
+		"args": "0"
+	}},
+    {"node":"if", "name":"if0", "link": {
+		"exec": "this.execin",
+		"condition": "int0.value"
+	}},
+    {"from":"this.execin", "to":"if0.exec"},
+    {"from":"int0", "to":"if0.condition"},
+    {"from":"if0.true", "to":"this.execout"},
+    {"from":"if0.false", "to":"this.execout"}
+  ]
+}

@@ -144,15 +144,8 @@ static int _SachiJSON_Load(Sachi_Object* InNodeInstance, Sachi_Object* InInputEx
 		return SACHI_ERROR;
 	}
 
-	char* Buffer = NULL;
-	sachi_size_t Size = 0;
-	if (Sachi_ReadFile(SachiString_Data(Item), &Buffer, &Size) != SACHI_OK)
-	{
-		return SACHI_ERROR;
-	}
-
 	Sachi_Object* Result = NULL;
-	if (SachiJSON_LoadsFromBufferAndLength(InNodeInstance->Interpreter, Buffer, Size, &Result) != SACHI_OK)
+	if (SachiJSON_Load(InNodeInstance->Interpreter, Item, &Result) != SACHI_OK)
 	{
 		return SACHI_ERROR;
 	}
@@ -198,5 +191,29 @@ SACHI_PUBLIC(int) SachiJSON_LoadsFromBufferAndLength(Sachi_Interpreter* InInterp
 		return SACHI_ERROR;
 	}
 
-	return _Convert(InInterpreter, Root, OutObject);
+	int Result = _Convert(InInterpreter, Root, OutObject);
+	cJSON_free(Root);
+	return Result;
+}
+
+SACHI_PUBLIC(int) SachiJSON_Load(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object** OutObject)
+{
+	return SachiJSON_LoadWithBufferAndLength(InInterpreter, SachiString_Data(InObject), SachiString_Size(InObject), OutObject);
+}
+
+SACHI_PUBLIC(int) SachiJSON_LoadWithBuffer(Sachi_Interpreter* InInterpreter, const char* InBuffer, Sachi_Object** OutObject)
+{
+	return SachiJSON_LoadWithBufferAndLength(InInterpreter, InBuffer, sachi_strlen(InBuffer), OutObject);
+}
+
+SACHI_PUBLIC(int) SachiJSON_LoadWithBufferAndLength(Sachi_Interpreter* InInterpreter, const char* InBuffer, sachi_size_t InLength, Sachi_Object** OutObject)
+{
+	char* Buffer = NULL;
+	sachi_size_t Size = 0;
+	if (Sachi_ReadFile(InBuffer, &Buffer, &Size) != SACHI_OK)
+	{
+		return SACHI_ERROR;
+	}
+
+	return SachiJSON_LoadsFromBufferAndLength(InInterpreter, Buffer, Size, OutObject);
 }

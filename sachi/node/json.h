@@ -44,6 +44,10 @@ SACHI_PUBLIC(int) SachiJSON_LoadsFromBuffer(Sachi_Interpreter* InInterpreter, co
  */
 SACHI_PUBLIC(int) SachiJSON_LoadsFromBufferAndLength(Sachi_Interpreter* InInterpreter, const char* InBuffer, sachi_size_t InLength, Sachi_Object** OutObject);
 
+SACHI_PUBLIC(int) SachiJSON_Load(Sachi_Interpreter* InInterpreter, Sachi_Object* InObject, Sachi_Object** OutObject);
+SACHI_PUBLIC(int) SachiJSON_LoadWithBuffer(Sachi_Interpreter* InInterpreter, const char* InBuffer, Sachi_Object** OutObject);
+SACHI_PUBLIC(int) SachiJSON_LoadWithBufferAndLength(Sachi_Interpreter* InInterpreter, const char* InBuffer, sachi_size_t InLength, Sachi_Object** OutObject);
+
 #ifdef __cplusplus
 }
 #endif

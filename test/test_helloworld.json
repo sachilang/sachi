@@ -1,0 +1,12 @@
+{
+  "name": "main",
+  "pins": [
+    {"name": "hello", "mode": "exec", "side": "in"},
+    {"name": "world", "mode": "exec", "side": "in"},
+    {"name": "out", "mode": "exec", "side": "out"}
+  ]
+  "flow":[
+    {"from":"this.hello", "to":"this.out"},
+    {"from":"this.world", "to":"this.out"}
+  ]
+}

@@ -77,7 +77,10 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewObject(Sachi_Interpreter* InInterpreter, Sa
 	Sachi_Object* Value = (Sachi_Object*)sachi_malloc(InType->SizeOf);
 	if (!Value)
 	{
-		SachiInterpreter_MemoryAllocationError(InInterpreter);
+		if (InInterpreter)
+		{
+			SachiInterpreter_MemoryAllocationError(InInterpreter);
+		}
 		return NULL;
 	}
 

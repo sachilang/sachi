@@ -15,6 +15,7 @@ typedef struct _Sachi_Node
 	Sachi_CFunc Func;
 	Sachi_Object* Pins;
 	Sachi_Object* Nodes;
+	Sachi_Object* Flow;
 } Sachi_Node;
 
 static Sachi_Object* _Sachi_NewNode(Sachi_Interpreter* InInterpreter)
@@ -50,6 +51,7 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewNode(Sachi_Interpreter* InInterpreter)
 	Value->Func = NULL;
 	Value->Pins = NULL;
 	Value->Nodes = NULL;
+	Value->Flow = NULL;
 
 	Value->Pins = Sachi_NewList(InInterpreter);
 	if (!Value->Pins)
@@ -63,6 +65,12 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewNode(Sachi_Interpreter* InInterpreter)
 		goto fail;
 	}
 
+	Value->Flow = Sachi_NewList(InInterpreter);
+	if (!Value->Flow)
+	{
+		goto fail;
+	}
+
 	return (Sachi_Object*)Value;
 
 fail:
@@ -70,23 +78,12 @@ fail:
 	return NULL;
 }
 
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewNodeFromMetadata(Sachi_Interpreter* InInterpreter, Sachi_NodeMetadata* InMetadata)
-{
-	Sachi_Object* Value = Sachi_NewNode(InInterpreter);
-	if (Value)
-	{
-		SachiNode_SetMetadata(Value, InMetadata);
-	}
-
-	return Value;
-}
-
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewNodeFromDict(Sachi_Interpreter* InInterpreter, Sachi_Object* InDict)
 {
 	Sachi_Object* Value = Sachi_NewNode(InInterpreter);
 	if (Value)
 	{
-		SachiNode_SetMetadataFromDict(Value, InDict);
+		SachiNode_InitFromDict(Value, InDict);
 	}
 
 	return Value;
@@ -108,36 +105,17 @@ SACHI_PUBLIC(void) Sachi_DeleteNode(Sachi_Object* InObject)
 	Node->Pins = NULL;
 	Sachi_DecRef(Node->Nodes);
 	Node->Nodes = NULL;
+	Sachi_DecRef(Node->Flow);
+	Node->Flow = NULL;
 	Sachi_DeleteObject(InObject);
 }
 
-SACHI_PUBLIC(int) SachiNode_SetMetadata(Sachi_Object* InObject, Sachi_NodeMetadata* InMetadata)
-{
-	if (SachiNode_SetNameFromBuffer(InObject, InMetadata->Name) != SACHI_OK)
-	{
-		return SACHI_ERROR;
-	}
-
-	SachiNode_SetFunc(InObject, InMetadata->Func);
-
-	if (SachiNode_SetPinsFromMetadata(InObject, InMetadata->Pins) != SACHI_OK)
-	{
-		return SACHI_ERROR;
-	}
-
-	if (SachiNode_SetNodesFromMetadata(InObject, InMetadata->Nodes) != SACHI_OK)
-	{
-		return SACHI_ERROR;
-	}
-
-	return SACHI_OK;
-}
-
-SACHI_PUBLIC(int) SachiNode_SetMetadataFromDict(Sachi_Object* InObject, Sachi_Object* InDict)
+SACHI_PUBLIC(int) SachiNode_InitFromDict(Sachi_Object* InObject, Sachi_Object* InDict)
 {
 	Sachi_Object* Name = NULL;
 	Sachi_Object* Pins = NULL;
 	Sachi_Object* Nodes = NULL;
+	Sachi_Object* Flow = NULL;
 
 	if (SachiDict_GetItemFromBuffer(InDict, "name", &Name) != SACHI_OK)
 	{
@@ -150,6 +128,11 @@ SACHI_PUBLIC(int) SachiNode_SetMetadataFromDict(Sachi_Object* InObject, Sachi_Ob
 	}
 
 	if (SachiDict_GetItemFromBuffer(InDict, "nodes", &Nodes) != SACHI_OK)
+	{
+		return SACHI_ERROR;
+	}
+
+	if (SachiDict_GetItemFromBuffer(InDict, "flow", &Flow) != SACHI_OK)
 	{
 		return SACHI_ERROR;
 	}
@@ -168,6 +151,8 @@ SACHI_PUBLIC(int) SachiNode_SetMetadataFromDict(Sachi_Object* InObject, Sachi_Ob
 	{
 		return SACHI_ERROR;
 	}
+
+	SachiNode_SetFlow(InObject, Flow);
 
 	return SACHI_OK;
 }
@@ -241,31 +226,6 @@ SACHI_PUBLIC(int) SachiNode_SetPins(Sachi_Object* InObject, Sachi_Object* InPins
 	return SACHI_OK;
 }
 
-SACHI_PUBLIC(int) SachiNode_SetPinsFromMetadata(Sachi_Object* InObject, Sachi_PinMetadata* InPins)
-{
-	Sachi_Node* Node = (Sachi_Node*)InObject;
-
-	SachiList_Clear(Node->Pins);
-	while(InPins && InPins->Name)
-	{
-		Sachi_Object* Pin = Sachi_NewPinFromMetadata(InObject->Interpreter, InPins);
-		if (!Pin)
-		{
-			return SACHI_ERROR;
-		}
-
-		if (SachiList_Push(Node->Pins, Pin) != SACHI_OK)
-		{
-			Sachi_DecRef(Pin);
-			return SACHI_ERROR;
-		}
-		Sachi_DecRef(Pin);
-		InPins++;
-	}
-
-	return SACHI_OK;
-}
-
 SACHI_PUBLIC(Sachi_Object*) SachiNode_GetPin(Sachi_Object* InObject, const char* InName)
 {
 	Sachi_Object* List = ((Sachi_Node*)InObject)->Pins;
@@ -313,31 +273,6 @@ SACHI_PUBLIC(int) SachiNode_SetNodes(Sachi_Object* InObject, Sachi_Object* InNod
 	return SACHI_OK;
 }
 
-SACHI_PUBLIC(int) SachiNode_SetNodesFromMetadata(Sachi_Object* InObject, Sachi_NodeMetadata* InNodes)
-{
-	Sachi_Node* Node = (Sachi_Node*)InObject;
-
-	SachiList_Clear(Node->Nodes);
-	while (InNodes && InNodes->Name)
-	{
-		Sachi_Object* Child = Sachi_NewNodeFromMetadata(InObject->Interpreter, InNodes);
-		if (!Child)
-		{
-			return SACHI_ERROR;
-		}
-
-		if (SachiList_Push(Node->Nodes, Child) != SACHI_OK)
-		{
-			Sachi_DecRef(Child);
-			return SACHI_ERROR;
-		}
-		Sachi_DecRef(Child);
-		InNodes++;
-	}
-
-	return SACHI_OK;
-}
-
 SACHI_PUBLIC(Sachi_Object*) SachiNode_GetNode(Sachi_Object* InObject, const char* InName)
 {
 	Sachi_Object* List = ((Sachi_Node*)InObject)->Nodes;
@@ -357,19 +292,17 @@ SACHI_PUBLIC(Sachi_Object*) SachiNode_GetNode(Sachi_Object* InObject, const char
 	return NULL;
 }
 
-SACHI_PUBLIC(int) SachiNode_Call(Sachi_Object* InObject, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object* InKwResults)
+SACHI_PUBLIC(void) SachiNode_SetFlow(Sachi_Object* InObject, Sachi_Object* InFlow)
 {
-	Sachi_CFunc Func = SachiNode_GetFunc(InObject);
-	if (!Func)
-	{
-		return SACHI_ERROR;
-	}
+	Sachi_Node* Node = (Sachi_Node*)InObject;
 
-	return Func(
-		InObject,
-		InInputExecPin,
-		InKwArgs,
-		OutOutputExecPin,
-		InKwResults
-	);
+	Sachi_Object* Old = Node->Flow;
+	Node->Flow = InFlow;
+	Sachi_DecRef(Old);
+	Sachi_IncRef(InFlow);
+}
+
+SACHI_PUBLIC(Sachi_Object*) SachiNode_GetFlow(Sachi_Object* InObject)
+{
+	return ((Sachi_Node*)InObject)->Flow;
 }

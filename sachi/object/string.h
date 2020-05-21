@@ -14,7 +14,7 @@ extern Sachi_ObjectType Sachi_StringType;
 
 typedef struct _Sachi_String Sachi_String;
 
-#define Sachi_CheckString(o) (o->Type == &Sachi_StringType)
+#define Sachi_IsString(o) (o->Type == &Sachi_StringType)
 	
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewString(Sachi_Interpreter* InInterpreter);
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewStringFromBuffer(Sachi_Interpreter* InInterpreter, const char* InBuffer);

@@ -49,23 +49,12 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewPin(Sachi_Interpreter* InInterpreter)
 	return (Sachi_Object*)Value;
 }
 
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewPinFromMetadata(Sachi_Interpreter* InInterpreter, Sachi_PinMetadata* InMetadata)
-{
-	Sachi_Object* Value = Sachi_NewPin(InInterpreter);
-	if (Value)
-	{
-		SachiPin_SetMetadata(Value, InMetadata);
-	}
-
-	return Value;
-}
-
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewPinFromDict(Sachi_Interpreter* InInterpreter, Sachi_Object* InDict)
 {
 	Sachi_Object* Value = Sachi_NewPin(InInterpreter);
 	if (Value)
 	{
-		SachiPin_SetMetadataFromDict(Value, InDict);
+		SachiPin_InitFromDict(Value, InDict);
 	}
 
 	return Value;
@@ -86,20 +75,7 @@ SACHI_PUBLIC(void) Sachi_DeletePin(Sachi_Object* InObject)
 	Sachi_DeleteObject(InObject);
 }
 
-SACHI_PUBLIC(int) SachiPin_SetMetadata(Sachi_Object* InObject, Sachi_PinMetadata* InMetadata)
-{
-	if (SachiPin_SetNameFromBuffer(InObject, InMetadata->Name) != SACHI_OK)
-	{
-		return SACHI_ERROR;
-	}
-
-	SachiPin_SetModeFromValue(InObject, InMetadata->Mode);
-	SachiPin_SetSideFromValue(InObject, InMetadata->Side);
-
-	return SACHI_OK;
-}
-
-SACHI_PUBLIC(int) SachiPin_SetMetadataFromDict(Sachi_Object* InObject, Sachi_Object* InDict)
+SACHI_PUBLIC(int) SachiPin_InitFromDict(Sachi_Object* InObject, Sachi_Object* InDict)
 {
 	Sachi_Object* Name = NULL;
 	Sachi_Object* Mode = NULL;
@@ -175,7 +151,7 @@ SACHI_PUBLIC(Sachi_PinSide) SachiPin_GetSide(Sachi_Object* InObject)
 
 SACHI_PUBLIC(int) SachiPin_SetSide(Sachi_Object* InObject, Sachi_Object* InSide)
 {
-	const char* Buffer = SachiString_Data(InObject);
+	const char* Buffer = SachiString_Data(InSide);
 	if (sachi_strcmp(Buffer, "in") == 0)
 	{
 		((Sachi_Pin*)InObject)->Side = SACHI_PINSIDE_IN;
@@ -204,7 +180,7 @@ SACHI_PUBLIC(Sachi_PinMode) SachiPin_GetMode(Sachi_Object* InObject)
 
 SACHI_PUBLIC(int) SachiPin_SetMode(Sachi_Object* InObject, Sachi_Object* InMode)
 {
-	const char* Buffer = SachiString_Data(InObject);
+	const char* Buffer = SachiString_Data(InMode);
 	if (sachi_strcmp(Buffer, "exec") == 0)
 	{
 		((Sachi_Pin*)InObject)->Mode = SACHI_PINMODE_EXEC;

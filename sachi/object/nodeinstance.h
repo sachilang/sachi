@@ -21,10 +21,9 @@ extern Sachi_ObjectType Sachi_NodeInstanceType;
  * Create a new node instance from existing node.
  *
  * :param InInterpreter: interpreter instance
- * :param InNode: node
  * :return: new instance
  */
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewNodeInstance(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode);
+SACHI_PUBLIC(Sachi_Object*) Sachi_NewNodeInstance(Sachi_Interpreter* InInterpreter);
 
 /**
  * Delete a node instance.
@@ -32,6 +31,11 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewNodeInstance(Sachi_Interpreter* InInterpret
  * :param InObject: node instance to delete
  */
 SACHI_PUBLIC(void) Sachi_DeleteNodeInstance(Sachi_Object* InObject);
+
+/**
+ * External access to Node is read only.
+ */
+SACHI_PUBLIC(Sachi_Object*) SachiNodeInstance_GetNode(const Sachi_Object* InObject);
 
 /**
  * External access to InputExecPin is write and read.
@@ -66,6 +70,20 @@ SACHI_PUBLIC(int) SachiNodeInstance_Call(Sachi_Object* InObject, Sachi_Object* I
  * Call this node.
  */
 SACHI_PUBLIC(int) SachiNodeInstance_CallWithArgs(Sachi_Object* InObject, Sachi_Object* InCallStack, Sachi_Object* InInputExecPin, Sachi_Object* InKwArgs, Sachi_Object** OutOutputExecPin, Sachi_Object** OutKwResults);
+
+/**
+ * Access locally defined variables.
+ *
+ * Those are used to control node execution.
+ */
+SACHI_PUBLIC(int) SachiNodeInstance_SetLocal(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object* InValue);
+SACHI_PUBLIC(int) SachiNodeInstance_SetLocalFromBuffer(Sachi_Object* InObject, const char* InBuffer, Sachi_Object* InValue);
+SACHI_PUBLIC(int) SachiNodeInstance_SetLocalFromBufferAndLength(Sachi_Object* InObject, const char* InBuffer, sachi_size_t InLength, Sachi_Object* InValue);
+SACHI_PUBLIC(int) SachiNodeInstance_GetLocal(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object** OutValue);
+SACHI_PUBLIC(int) SachiNodeInstance_GetLocalFromBuffer(Sachi_Object* InObject, const char* InBuffer, Sachi_Object** OutValue);
+SACHI_PUBLIC(int) SachiNodeInstance_GetLocalFromBufferAndLength(Sachi_Object* InObject, const char* InBuffer, sachi_size_t InLength, Sachi_Object** OutValue);
+
+SACHI_PUBLIC(int) SachiNodeInstance_FindArgLinkedToPin(Sachi_Object* InObject, const char* InPin, Sachi_Object** OutArg);
 
 #ifdef __cplusplus
 }

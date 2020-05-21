@@ -14,7 +14,7 @@ extern Sachi_ObjectType Sachi_DictType;
 
 typedef struct _Sachi_Dict Sachi_Dict;
 
-#define Sachi_CheckDict(o) (o->Type == &Sachi_DictType)
+#define Sachi_IsDict(o) (o->Type == &Sachi_DictType)
 	
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewDict(Sachi_Interpreter* InInterpreter);
 SACHI_PUBLIC(void) Sachi_DeleteDict(Sachi_Object* InObject);

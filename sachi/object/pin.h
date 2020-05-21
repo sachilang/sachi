@@ -29,17 +29,6 @@ extern Sachi_ObjectType Sachi_PinType;
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewPin(Sachi_Interpreter* InInterpreter);
 
 /**
- * Create a new pin.
- *
- * Pin's metadata are initialized from external metadata.
- *
- * :param InInterpreter: interpreter instance
- * :param InMetadata: metadata
- * :return: new pin
- */
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewPinFromMetadata(Sachi_Interpreter* InInterpreter, Sachi_PinMetadata* InMetadata);
-
-/**
  * Create a new pin with an empty definition.
  *
  * Pin's metadata are initialized from dict.
@@ -61,19 +50,10 @@ SACHI_PUBLIC(void) Sachi_DeletePin(Sachi_Object* InObject);
  * Set the metadata of this pin.
  *
  * :param InObject: instance
- * :param InMetadata: metadata
- * :return: error code
- */
-SACHI_PUBLIC(int) SachiPin_SetMetadata(Sachi_Object* InObject, Sachi_PinMetadata* InMetadata);
-
-/**
- * Set the metadata of this pin.
- *
- * :param InObject: instance
  * :param InDict: dict containing metadata
  * :return: error code
  */
-SACHI_PUBLIC(int) SachiPin_SetMetadataFromDict(Sachi_Object* InObject, Sachi_Object* InDict);
+SACHI_PUBLIC(int) SachiPin_InitFromDict(Sachi_Object* InObject, Sachi_Object* InDict);
 
 SACHI_PUBLIC(const char*) SachiPin_GetName(Sachi_Object* InObject);
 SACHI_PUBLIC(int) SachiPin_SetName(Sachi_Object* InObject, Sachi_Object* InName);

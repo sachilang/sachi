@@ -16,22 +16,33 @@ typedef struct _Sachi_NodeInstance
 	Sachi_Object* OutputExecPin; // from where we exit this node
 	Sachi_Object* KwArgs; // arguments received
 	Sachi_Object* KwResults; // results produced
+	Sachi_Object* Locals; // local variables
 } Sachi_NodeInstance;
+
+static Sachi_Object* _Sachi_NewNodeInstance(Sachi_Interpreter* InInterpreter)
+{
+	return Sachi_NewNodeInstance(InInterpreter);
+}
+
+static void _Sachi_DeleteNodeInstance(Sachi_Object* InObject)
+{
+	Sachi_DeleteNodeInstance(InObject);
+}
 
 Sachi_ObjectType Sachi_NodeInstanceType = {
 	"nodeinstance",
 	sizeof(Sachi_NodeInstance),
 	NULL, // base
-	NULL, // new
-	NULL, // delete
+	_Sachi_NewNodeInstance,
+	_Sachi_DeleteNodeInstance,
 	NULL, // nodes
 	NULL, // hash
 	NULL, // to string
 };
 
-SACHI_PUBLIC(Sachi_Object*) Sachi_NewNodeInstance(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
+SACHI_PUBLIC(Sachi_Object*) Sachi_NewNodeInstance(Sachi_Object* InNode)
 {
-	Sachi_NodeInstance* Value = (Sachi_NodeInstance*)Sachi_NewObject(InInterpreter, &Sachi_NodeInstanceType);
+	Sachi_NodeInstance* Value = (Sachi_NodeInstance*)Sachi_NewObject(InNode->Interpreter, &Sachi_NodeInstanceType);
 	if (!Value)
 	{
 		return NULL;
@@ -45,13 +56,13 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewNodeInstance(Sachi_Interpreter* InInterpret
 	Value->KwArgs = NULL;
 	Value->KwResults = NULL;
 
-	Value->KwArgs = Sachi_NewDict(InInterpreter);
+	Value->KwArgs = Sachi_NewDict(InNode->Interpreter);
 	if (!Value->KwArgs)
 	{
 		goto fail;
 	}
 
-	Value->KwResults = Sachi_NewDict(InInterpreter);
+	Value->KwResults = Sachi_NewDict(InNode->Interpreter);
 	if (!Value->KwResults)
 	{
 		goto fail;
@@ -60,7 +71,7 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewNodeInstance(Sachi_Interpreter* InInterpret
 	return (Sachi_Object*)Value;
 
 fail:
-	Sachi_DeleteNodeInstance(Value);
+	Sachi_DeleteNodeInstance((Sachi_Object*)Value);
 	return NULL;
 }
 
@@ -85,6 +96,11 @@ SACHI_PUBLIC(void) Sachi_DeleteNodeInstance(Sachi_Object* InObject)
 	Sachi_DecRef(NodeInstance->KwResults);
 	NodeInstance->KwResults = NULL;
 	Sachi_DeleteObject(InObject);
+}
+
+SACHI_PUBLIC(Sachi_Object*) SachiNodeInstance_GetNode(const Sachi_Object* InObject)
+{
+	return ((const Sachi_NodeInstance*)InObject)->Node;
 }
 
 SACHI_PUBLIC(Sachi_Object*) SachiNodeInstance_GetInputExecPin(const Sachi_Object* InObject)
@@ -175,8 +191,47 @@ SACHI_PUBLIC(int) SachiNodeInstance_CallWithArgs(Sachi_Object* InObject, Sachi_O
 		return SACHI_ERROR;
 	}
 
-	*OutOutputExecPin = NodeInstance->OutputExecPin;
-	*OutKwResults = NodeInstance->KwResults;
+	Sachi_IncRef(NodeInstance->OutputExecPin);
+
+	if (OutOutputExecPin)
+	{
+		*OutOutputExecPin = NodeInstance->OutputExecPin;
+	}
+
+	if (OutKwResults)
+	{
+		*OutKwResults = NodeInstance->KwResults;
+	}
 
 	return SACHI_OK;
+}
+
+SACHI_PUBLIC(int) SachiNodeInstance_SetLocal(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object* InValue)
+{
+	return SachiDict_SetItem(((Sachi_NodeInstance*)InObject)->Locals, InKey, InValue);
+}
+
+SACHI_PUBLIC(int) SachiNodeInstance_SetLocalFromBuffer(Sachi_Object* InObject, const char* InBuffer, Sachi_Object* InValue)
+{
+	return SachiDict_SetItemFromBuffer(((Sachi_NodeInstance*)InObject)->Locals, InBuffer, InValue);
+}
+
+SACHI_PUBLIC(int) SachiNodeInstance_SetLocalFromBufferAndLength(Sachi_Object* InObject, const char* InBuffer, sachi_size_t InLength, Sachi_Object* InValue)
+{
+	return SachiDict_SetItemFromBufferAndLength(((Sachi_NodeInstance*)InObject)->Locals, InBuffer, InLength, InValue);
+}
+
+SACHI_PUBLIC(int) SachiNodeInstance_GetLocal(Sachi_Object* InObject, Sachi_Object* InKey, Sachi_Object** OutValue)
+{
+	return SachiDict_GetItem(((Sachi_NodeInstance*)InObject)->Locals, InKey, OutValue);
+}
+
+SACHI_PUBLIC(int) SachiNodeInstance_GetLocalFromBuffer(Sachi_Object* InObject, const char* InBuffer, Sachi_Object** OutValue)
+{
+	return SachiDict_GetItemFromBuffer(((Sachi_NodeInstance*)InObject)->Locals, InBuffer, OutValue);
+}
+
+SACHI_PUBLIC(int) SachiNodeInstance_GetLocalFromBufferAndLength(Sachi_Object* InObject, const char* InBuffer, sachi_size_t InLength, Sachi_Object** OutValue)
+{
+	return SachiDict_GetItemFromBufferAndLength(((Sachi_NodeInstance*)InObject)->Locals, InBuffer, InLength, OutValue);
 }

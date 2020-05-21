@@ -5,6 +5,7 @@
 #include "test/test_dict.h"
 #include "test/test_node.h"
 #include "test/test_json.h"
+#include "test/test_programs.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -41,11 +42,12 @@ int main()
 	Sachi_InitType(&Sachi_DictType);
 	Sachi_InitType(&Sachi_NodeType);
 
-	run(test_int);
+	/*run(test_int);
 	run(test_string);
 	run(test_list);
 	run(test_dict);
 	run(test_node);
-	run(test_json);
+	run(test_json);*/
+	run(test_programs);
 	return 0;
 }

@@ -14,7 +14,7 @@ extern Sachi_ObjectType Sachi_ListType;
 
 typedef struct _Sachi_List Sachi_List;
 
-#define Sachi_CheckList(o) (o->Type == &Sachi_ListType)
+#define Sachi_IsList(o) (o->Type == &Sachi_ListType)
 	
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewList(Sachi_Interpreter* InInterpreter);
 SACHI_PUBLIC(Sachi_Object*) Sachi_NewListWithCapacity(Sachi_Interpreter* InInterpreter, sachi_size_t InCapacity);
@@ -39,6 +39,11 @@ SACHI_PUBLIC(const char*) SachiList_ToString(const Sachi_Object* InObject);
  * :return: underlying memory array
  */
 SACHI_PUBLIC(Sachi_Object**) SachiList_Data(const Sachi_Object* InObject);
+
+#define SACHILIST_FOREACH(list, index, items) \
+    Sachi_Object** items = SachiList_Data(list); \
+    sachi_size_t _Size = SachiList_Size(list); \
+	for (sachi_size_t index = 0; index < _Size; ++index, items++)
 
 #ifdef __cplusplus
 }

@@ -10,7 +10,10 @@ extern "C"
 #include "sachi/posix.h"
 #include "sachi/object/object.h"
 #include "sachi/nodemetadata.h"
-
+    
+extern Sachi_NodeMetadata Sachi_IfNodeMetadata;
+extern Sachi_NodeMetadata Sachi_ForInNodeMetadata;
+extern Sachi_NodeMetadata Sachi_WhileNodeMetadata;
 extern Sachi_NodeMetadata Sachi_ImportNodeMetadata;
 extern Sachi_NodeMetadata Sachi_PrintNodeMetadata;
 

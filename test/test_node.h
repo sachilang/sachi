@@ -13,6 +13,8 @@ extern "C" {
 
 #include "sachi/object/interpreter.h"
 #include "sachi/object/node.h"
+#include "sachi/object/metadata/metadatanode.h"
+#include "sachi/object/nodeinstance.h"
 #include "sachi/object/pin.h"
 #include "sachi/object/list.h"
 #include "sachi/object/dict.h"
@@ -49,7 +51,10 @@ static int _HelloWorld(Sachi_Object* InNodeInstance, Sachi_Object* InInputExecPi
 
 	if (OutOutputExecPin)
 	{
-		*OutOutputExecPin = SachiNode_GetPin(InNodeInstance, _HelloWorldPins[_SACHI_HELLOWORLD_EXECOUT].Name);
+		*OutOutputExecPin = SachiNode_GetPin(
+			SachiNodeInstance_GetNode(InNodeInstance),
+			_HelloWorldPins[_SACHI_HELLOWORLD_EXECOUT].Name
+		);
 	}
 
 	return SACHI_OK;
@@ -103,10 +108,14 @@ void test_node(Sachi_Interpreter* InInterpreter)
 	Sachi_Object* HelloWorldNode = SachiNode_GetNode(Node, "helloworld");
 	Assert(HelloWorldNode != NULL);
 	Assert(SachiList_Size(SachiNode_GetPins(HelloWorldNode)) == 3);
+	Sachi_Object* HelloWorldInstance = Sachi_NewNodeInstance(HelloWorldNode);
+	Assert(HelloWorldInstance != NULL);
 
 	Sachi_Object* MinNode = SachiNode_GetNode(Node, "min");
 	Assert(MinNode != NULL);
 	Assert(SachiList_Size(SachiNode_GetPins(MinNode)) == 3);
+	Sachi_Object* MinInstance = Sachi_NewNodeInstance(MinNode);
+	Assert(MinInstance != NULL);
 
 	// Test HelloWorld
 	Sachi_Object* Pins = SachiNode_GetPins(HelloWorldNode);
@@ -114,28 +123,10 @@ void test_node(Sachi_Interpreter* InInterpreter)
 
 	Sachi_Object* ExecPin = NULL;
 	Assert(SachiList_GetItem(Pins, _SACHI_HELLOWORLD_EXECHELLO, &ExecPin) == SACHI_OK);
-	/*
-	SachiNode_GetFunc(HelloWorldNode)(
-		InInterpreter,
-		HelloWorldNode,
-		ExecPin,
-		NULL,
-		NULL,
-		NULL
-	);*/
-
+	Assert(SachiNodeInstance_CallWithArgs(HelloWorldInstance, NULL, ExecPin, NULL, NULL, NULL) == SACHI_OK);
 	Assert(SachiList_GetItem(Pins, _SACHI_HELLOWORLD_EXECWORLD, &ExecPin) == SACHI_OK);
+	Assert(SachiNodeInstance_CallWithArgs(HelloWorldInstance, NULL, ExecPin, NULL, NULL, NULL) == SACHI_OK);
 
-	/*
-	SachiNode_GetFunc(HelloWorldNode)(
-		InInterpreter,
-		HelloWorldNode,
-		ExecPin,
-		NULL,
-		NULL,
-		NULL
-	);
-	*/
 	// Test Min
 	Pins = SachiNode_GetPins(MinNode);
 	Assert(Pins != NULL);
@@ -148,18 +139,11 @@ void test_node(Sachi_Interpreter* InInterpreter)
 	SachiDict_SetItemFromBuffer(KwArgs, "a", A);
 	SachiDict_SetItemFromBuffer(KwArgs, "b", B);
 
-	Sachi_Object* KwResults = Sachi_NewDict(InInterpreter);
-	Assert(KwResults != NULL);
-	/*
-	SachiNode_GetFunc(MinNode)(
-		InInterpreter,
-		MinNode,
-		NULL,
-		KwArgs,
-		NULL,
-		KwResults
-	);*/
+	Sachi_Object* KwResults = NULL;
+	Assert(SachiNodeInstance_CallWithArgs(MinInstance, NULL, ExecPin, KwArgs, NULL, &KwResults) == SACHI_OK);
 
+	Sachi_DecRef(MinInstance);
+	Sachi_DecRef(HelloWorldInstance);
 	Sachi_DecRef(A);
 	Sachi_DecRef(B);
 	Sachi_DecRef(KwArgs);

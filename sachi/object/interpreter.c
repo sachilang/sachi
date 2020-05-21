@@ -59,6 +59,7 @@ SACHI_PUBLIC(Sachi_Object*) Sachi_NewInterpreter(Sachi_Interpreter* InInterprete
 		return NULL;
 	}
 
+	Value->Interpreter = Value;
 	Value->CallStack = NULL;
 	Value->True = NULL;
 	Value->False = NULL;
@@ -108,17 +109,17 @@ SACHI_PUBLIC(void) Sachi_DeleteInterpreter(Sachi_Object* InObject)
 
 SACHI_PUBLIC(const char*) SachiInterpreter_GetErrorMessage(Sachi_Object* InObject)
 {
-	return ((Sachi_Interpreter*)InObject)->Error.Message;
+	return InObject->Interpreter->Error.Message;
 }
 
 SACHI_PUBLIC(void) SachiInterpreter_SetErrorMessage(Sachi_Object* InObject, const char* InBuffer)
 {
-	((Sachi_Interpreter*)InObject)->Error.Message = InBuffer;
+	InObject->Interpreter->Error.Message = InBuffer;
 }
 
 SACHI_PUBLIC(void) SachiInterpreter_SetErrorMessageWithLength(Sachi_Object* InObject, const char* InBuffer, sachi_size_t InBufferLength)
 {
-	((Sachi_Interpreter*)InObject)->Error.Message = InBuffer;
+	InObject->Interpreter->Error.Message = InBuffer;
 }
 
 SACHI_PUBLIC(void) SachiInterpreter_MemoryAllocationError(Sachi_Object* InObject)

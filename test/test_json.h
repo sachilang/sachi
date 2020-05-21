@@ -13,6 +13,8 @@ extern "C" {
 
 #include "sachi/object/interpreter.h"
 #include "sachi/object/dict.h"
+#include "sachi/object/nodeinstance.h"
+#include "sachi/object/metadata/metadatanode.h"
 #include "sachi/node/json.h"
 
 #ifdef __cplusplus
@@ -23,16 +25,19 @@ static const char* JSON_STRING = "{\"key\": \"value\", \"list\": [\"value\", \"v
 
 void test_json_loads(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
 {
-	Sachi_Object* Callback = SachiNode_GetNode(InNode, "loads");
-	Assert(Callback != NULL);
+	Sachi_Object* LoadsNode = SachiNode_GetNode(InNode, "loads");
+	Assert(LoadsNode != NULL);
+	Sachi_Object* LoadsInstance = Sachi_NewNodeInstance(LoadsNode);
+	Assert(LoadsInstance != NULL);
 
 	Sachi_Object* KwArgs = Sachi_NewDict(InInterpreter);
 	Sachi_Object* S = Sachi_NewStringFromBuffer(InInterpreter, JSON_STRING);
 	Assert(SachiDict_SetItemFromBuffer(KwArgs, "s", S) == SACHI_OK);
 	Sachi_DecRef(S);
 
-	Sachi_Object* KwResults = Sachi_NewDict(InInterpreter);
-	Assert(SachiNode_Call(Callback, NULL, KwArgs, NULL, KwResults) == SACHI_OK);
+	Sachi_Object* KwResults = NULL;
+	Assert(SachiNodeInstance_CallWithArgs(LoadsInstance, NULL, NULL, KwArgs, NULL, &KwResults) == SACHI_OK);
+	Assert(KwResults != NULL);
 
 	Sachi_Object* Result = NULL;
 	SachiDict_GetItemFromBuffer(KwResults, "o", &Result);
@@ -40,22 +45,26 @@ void test_json_loads(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
 	Assert(SachiDict_Size(Result) == 2);
 	std::cout << Result->Type->ToString(Result) << std::endl;
 
+	Sachi_DecRef(LoadsInstance);
 	Sachi_DecRef(KwArgs);
 	Sachi_DecRef(KwResults);
 }
 
 void test_json_load(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
 {
-	Sachi_Object* Callback = SachiNode_GetNode(InNode, "load");
-	Assert(Callback != NULL);
+	Sachi_Object* LoadNode = SachiNode_GetNode(InNode, "load");
+	Assert(LoadNode != NULL);
+	Sachi_Object* LoadInstance = Sachi_NewNodeInstance(LoadNode);
+	Assert(LoadInstance != NULL);
 
 	Sachi_Object* KwArgs = Sachi_NewDict(InInterpreter);
 	Sachi_Object* S = Sachi_NewStringFromBuffer(InInterpreter, "test/test.json");
 	Assert(SachiDict_SetItemFromBuffer(KwArgs, "s", S) == SACHI_OK);
 	Sachi_DecRef(S);
 
-	Sachi_Object* KwResults = Sachi_NewDict(InInterpreter);
-	Assert(SachiNode_Call(Callback, NULL, KwArgs, NULL, KwResults) == SACHI_OK);
+	Sachi_Object* KwResults = NULL;
+	Assert(SachiNodeInstance_CallWithArgs(LoadInstance, NULL, NULL, KwArgs, NULL, &KwResults) == SACHI_OK);
+	Assert(KwResults != NULL);
 
 	Sachi_Object* Result = NULL;
 	SachiDict_GetItemFromBuffer(KwResults, "o", &Result);
@@ -65,6 +74,7 @@ void test_json_load(Sachi_Interpreter* InInterpreter, Sachi_Object* InNode)
 	Assert(sachi_strcmp(SachiNode_GetName(Node), "math") == 0);
 
 	Sachi_DecRef(Node);
+	Sachi_DecRef(LoadInstance);
 	Sachi_DecRef(KwArgs);
 	Sachi_DecRef(KwResults);
 }

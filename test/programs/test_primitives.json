@@ -1,0 +1,42 @@
+{
+  "name": "main",
+  "pins": [
+    {"name": "execin", "mode": "exec", "side": "in"},
+    {"name": "execout", "mode": "exec", "side": "out"}
+  ],
+  "flow":[
+    {
+	  "node": "print",
+	  "name": "print_int",
+	  "link": {
+	    "execin": "this.execin",
+		"s": 1
+	  }
+	},
+    {
+	  "node": "print",
+	  "name": "print_string",
+	  "link": {
+	    "execin": "print_int.execout",
+		"s": "Hello World !"
+	  }
+	},
+    {
+	  "node": "print",
+	  "name": "print_list",
+	  "link": {
+	    "execin": "print_string.execout",
+		"s": [1, 2, 3]
+	  }
+	},
+    {
+	  "node": "print",
+	  "name": "print_dict",
+	  "link": {
+	    "execin": "print_list.execout",
+		"execout": "this.execout",
+		"s": {"a": 1, "b": 2, "c": 3}
+	  }
+	}
+  ]
+}

@@ -108,11 +108,6 @@ SACHI_PUBLIC(int) SachiList_Reserve(Sachi_Object* InObject, sachi_size_t InSize)
 
 SACHI_PUBLIC(sachi_size_t) SachiList_Capacity(const Sachi_Object* InObject)
 {
-	if (!Sachi_CheckList(InObject))
-	{
-		return SACHI_ERROR;
-	}
-
 	return ((const Sachi_List*)InObject)->AllocatedSize;
 }
 
